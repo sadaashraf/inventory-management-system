@@ -1,13 +1,27 @@
-import { faker } from "@faker-js/faker";
+const data = [
+  {
+    id: 1,
+    img: 'https://via.placeholder.com/150',
+    Type: 'Hotel',
+    AC_NonAC: 'AC',
+    Meal: 'Breakfast',
+    BedCapacity: 2,
+    Phone: '+1234567890',
+    Rent: 150,
+    Action: 'Action Placeholder 1'
+  },
+  {
+    id: 2,
+    img: 'https://via.placeholder.com/150',
+    Type: 'Motel',
+    AC_NonAC: 'Non-AC',
+    Meal: 'Lunch',
+    BedCapacity: 3,
+    Phone: '+9876543210',
+    Rent: 200,
+    Action: 'Action Placeholder 2'
+  },
+  // Add more objects as needed
+];
 
-export const data = [...Array(30)].map((_, index) => ({
-  id: index + 1,
-  avatar: faker.image.avatar(),
-  firstName: faker.person.firstName(),
-  lastName: faker.person.lastName(),
-  mobile: faker.helpers.fromRegExp("+92-000-000-000"),
-  arrive: faker.date.future().toLocaleDateString(),
-  depart: faker.date.future().toLocaleDateString(),
-  isPaid: faker.datatype.boolean(),
-  // You can add more fields here if needed
-}));
+export { data };
