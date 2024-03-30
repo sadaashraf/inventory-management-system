@@ -140,7 +140,7 @@ export default function MiniDrawer() {
           </DrawerHeader>
           <Divider />
           <List>
-            {/* Define routes and navigate to respective components */}
+            Define routes and navigate to respective components
             {[
               
               { title: 'Dashboard', icon: <AddHomeIcon />, path: '/dashboard' },
@@ -164,7 +164,7 @@ export default function MiniDrawer() {
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <DrawerHeader />
           <Routes>
-            {/* Define routes for components */}
+            Define routes for components
             <Route path="/dashboard"   element={<Dashboard/>} />
             <Route path="/hotels" element={<Hotels/>} />
             <Route path="/room" element={<Room/>} />
