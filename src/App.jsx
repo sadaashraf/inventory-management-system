@@ -20,8 +20,6 @@ import AddHomeIcon from '@mui/icons-material/AddHome';
 import BedIcon from '@mui/icons-material/Bed';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import BookIcon from '@mui/icons-material/Book';
-import HotelIcon from '@mui/icons-material/Hotel';
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Dashboard from './components/Dashbaord/Dashboard';
