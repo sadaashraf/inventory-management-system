@@ -27,7 +27,8 @@ import Hotels from './components/Hotels/Hotels';
 import Room from './components/Rooms/Room';
 import Booking from './components/Bookings/Booking';
 import User from './components/Users/User';
-
+import LoginForm from "./components/Login";
+import RegisterForm from "./components/Register";
 
 
 const drawerWidth = 240;
@@ -141,6 +142,8 @@ export default function MiniDrawer() {
           <Divider />
           <List>
             {[
+              { title: 'Login', path: '/login' },
+              { title: 'Register', path: '/register' },
               { title: 'Dashboard', icon: <AddHomeIcon />, path: '/dashboard' },
               { title: 'Hotels', icon: <HomeWorkIcon />, path: '/hotels' },
               { title: 'Room', icon: <BedIcon />, path: '/room' },
@@ -167,6 +170,8 @@ export default function MiniDrawer() {
             <Route path="/room" element={<Room/>} />
             <Route path="/booking" element={<Booking/>} />
             <Route path="/user" element={<User/>} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} /> 
           </Routes>
         </Box>
       </Box>
