@@ -1,9 +1,9 @@
 import User from "../Models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-//================================||
-//          REGISTER              ||
-//================================||
+
+//--------REGISTER--------------||
+
 const register = async (req, res, next) => {
   try {
     const salt = bcrypt.genSaltSync(10);
@@ -25,9 +25,8 @@ const register = async (req, res, next) => {
   }
 };
 
-//================================||
-//            LOGIN               ||
-//================================||
+//--------LOGIN-------------//            
+
 const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;

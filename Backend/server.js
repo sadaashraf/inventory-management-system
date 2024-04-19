@@ -20,9 +20,9 @@ app.use(express.json());
 
 // Set endpoints
 // Auth
-app.post("/api/auth", authRoute); 
-app.post("/api/auth/register", register); 
-app.post("/api/auth/login", login); 
+app.post("/api/auth", authRoute);
+app.post("/api/auth/register", register);
+app.post("/api/auth/login", login);
 
 // Users
 // app.use("/api/users", usersRoutes);
