@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import { login, register } from "./Controller/auth.js";
 import authRoute from "./Routes/auth.routes.js";
 // import usersRoutes from "./Routes/user.routes.js";
-// import hotelsRoutes from "./Routes/hotel.routes.js";
+import hotelsRoutes from "./Routes/hotel.routes.js";
 // import roomRoutes from "./Routes/room.routes.js";
 
 const app = express();
@@ -28,7 +28,7 @@ app.post("/api/auth/login", login);
 // app.use("/api/users", usersRoutes);
 
 // // Hotels
-// app.use("/api/hotels", hotelsRoutes);
+app.use("/api/hotels", hotelsRoutes);
 // app.use("/api/rooms", roomRoutes);
 
 const DatabaseConnection = async () => {
