@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import MuiDrawer from '@mui/material/Drawer';
+import Drawer from '@mui/material/Drawer';
+
+// import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
@@ -16,89 +18,76 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import AddHomeIcon from '@mui/icons-material/AddHome';
-import BedIcon from '@mui/icons-material/Bed';
-import HomeWorkIcon from '@mui/icons-material/HomeWork';
-import BookIcon from '@mui/icons-material/Book';
-import PersonIcon from '@mui/icons-material/Person';
+
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import Person4Icon from '@mui/icons-material/Person4';
+import HotelIcon from '@mui/icons-material/Hotel';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import Button from '@mui/material/Button';
+// import AddHomeIcon from '@mui/icons-material/AddHome';
+// import BedIcon from '@mui/icons-material/Bed';
+// import HomeWorkIcon from '@mui/icons-material/HomeWork';
+// import BookIcon from '@mui/icons-material/Book';
+// import PersonIcon from '@mui/icons-material/Person';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Dashboard from './components/Dashbaord/Dashboard';
 import Hotels from './components/Hotels/Hotels';
-import Room from './components/Rooms/Room';
+import Rooms from './components/Rooms/Room';
 import Booking from './components/Bookings/Booking';
 import User from './components/Users/User';
 import LoginForm from "./components/Login";
 import RegisterForm from "./components/Register";
+import LogoImage from "./assets/logo.png";
+// import SingleHotel from './components/Hotels/SingleHotel';
+
 
 
 const drawerWidth = 240;
-
-const openedMixin = (theme) => ({
-  width: drawerWidth,
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: 'hidden',
-});
-
-const closedMixin = (theme) => ({
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: 'hidden',
-  width: `calc(${theme.spacing(7)} + 1px)`,
-  [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(8)} + 1px)`,
-  },
-});
-
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
+const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
+  ({ theme, open }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: `-${drawerWidth}px`,
+    ...(open && {
+      transition: theme.transitions.create("margin", {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginLeft: 0,
+    }),
+  })
+);
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
+  shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(['width', 'margin'], {
+  transition: theme.transitions.create(["margin", "width"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
+    marginLeft: `${drawerWidth}px`,
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
   }),
 }));
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open }) => ({
-    width: drawerWidth,
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box',
-    ...(open && {
-      ...openedMixin(theme),
-      '& .MuiDrawer-paper': openedMixin(theme),
-    }),
-    ...(!open && {
-      ...closedMixin(theme),
-      '& .MuiDrawer-paper': closedMixin(theme),
-    }),
-  }),
-);
-
-export default function MiniDrawer() {
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  padding: theme.spacing(0, 1),
+  ...theme.mixins.toolbar,
+  justifyContent: "flex-end",
+}));
+export default function PersistentDrawerLeft() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -112,69 +101,122 @@ export default function MiniDrawer() {
 
   return (
     <Router>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar position="fixed" open={open}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
+      <React.Fragment>
+        <div>
+          <Box sx={{ display: "flex" }}>
+            <CssBaseline />
+            <AppBar position="fixed" open={open}>
+              <Toolbar>
+                <IconButton
+                  color="inherit"
+                  aria-label="open drawer"
+                  onClick={handleDrawerOpen}
+                  edge="start"
+                  sx={{ mr: 2, ...(open && { display: "none" }) }}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Typography variant="h4">
+                  <img
+                    src={LogoImage}
+                    alt="Logo"
+                    style={{
+                      justifyContent: "flex-start",
+                      height: 60,
+                      width: 150,
+                      marginRight: 8,
+                    }}
+                  />
+                </Typography>
+                <div style={{ marginLeft: "auto" }}>
+                  <Button
+                    color="inherit"
+                    component={Link}
+                    to="/login"
+                    sx={{
+                      "&:hover": { backgroundColor: "orange", color: "black" },
+                    }}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    color="inherit"
+                    component={Link}
+                    to="/register"
+                    sx={{
+                      "&:hover": { backgroundColor: "orange", color: "black" },
+                    }}
+                  >
+                    Register
+                  </Button>
+                </div>
+              </Toolbar>
+            </AppBar>
+            <Drawer
               sx={{
-                marginRight: 5,
-                ...(open && { display: 'none' }),
+                width: drawerWidth,
+                flexShrink: 0,
+                "& .MuiDrawer-paper": {
+                  width: drawerWidth,
+                  boxSizing: "border-box",
+                },
               }}
+              variant="persistent"
+              anchor="left"
+              open={open}
             >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h4" noWrap component="div">
-              Rinor 
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent" open={open}>
-          <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
-              {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-            </IconButton>
-          </DrawerHeader>
-          <Divider />
-          <List>
-            {[
-              { title: 'Login', path: '/login' },
-              { title: 'Register', path: '/register' },
-              { title: 'Dashboard', icon: <AddHomeIcon />, path: '/dashboard' },
-              { title: 'Hotels', icon: <HomeWorkIcon />, path: '/hotels' },
-              { title: 'Room', icon: <BedIcon />, path: '/room' },
-              { title: 'Booking', icon: <BookIcon />, path: '/booking' },
-              { title: 'User', icon: <PersonIcon />, path: '/user' },
-            ].map((item) => (
-              <ListItem key={item.title} disablePadding sx={{ display: 'block' }}>
-                <ListItemButton component={Link} to={item.path}>
-                  <ListItemIcon>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-        </Drawer>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <DrawerHeader />
-          <Routes>
-            <Route path="/dashboard"   element={<Dashboard/>} />
-            <Route path="/hotels" element={<Hotels/>} />
-            <Route path="/room" element={<Room/>} />
-            <Route path="/booking" element={<Booking/>} />
-            <Route path="/user" element={<User/>} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/register" element={<RegisterForm />} /> 
-          </Routes>
-        </Box>
-      </Box>
+              <DrawerHeader>
+                <IconButton onClick={handleDrawerClose}>
+                  {theme.direction === "ltr" ? (
+                    <ChevronLeftIcon />
+                  ) : (
+                    <ChevronRightIcon />
+                  )}
+                </IconButton>
+              </DrawerHeader>
+              <Divider />
+              <List>
+                {[
+                  {
+                    text: "Dashboard",icon: <DashboardIcon />, path: "/dashboard",
+                  },
+                  { text: "User", icon: <Person4Icon />, path: "/user" },
+                  { text: "Hotels", icon: <HotelIcon />, path: "/hotels" },
+                  { text: "Rooms", icon: <MeetingRoomIcon />, path: "/rooms" },
+                  {
+                    text: "Booking",
+                    icon: <EventAvailableIcon />,
+                    path: "/booking",
+                  },
+                ].map((item) => (
+                  <ListItem key={item.text} disablePadding>
+                    <ListItemButton component={Link} to={item.path}>
+                      <ListItemIcon>{item.icon}</ListItemIcon>
+                      <ListItemText primary={item.text} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+              <Divider />
+            </Drawer>
+            <Main open={open}>
+              <DrawerHeader />
+              <Routes>
+                <Route path="/Dashboard" element={<Dashboard />} />
+                <Route path="/user" element={<User />} />
+                <Route path="/hotels" element={<Hotels />} />
+                <Route path="/rooms" element={<Rooms />} />
+                <Route path="/booking" element={<Booking />} />
+                <Route path="/login" element={<LoginForm />} />
+                <Route path="/register" element={<RegisterForm />} />
+                {/* <Route path="/hotel/:id" element={<Singlehotel />} /> */}
+                {/* <Route path="/user/:id" element={<SingleUsers />} /> */}
+
+              </Routes>
+            </Main>s
+          </Box>
+        </div>
+      </React.Fragment>
     </Router>
   );
 }
