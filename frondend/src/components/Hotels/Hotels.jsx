@@ -1,55 +1,180 @@
-import React, { useState } from 'react';
-import { useMemo } from 'react';
-import { MaterialReactTable, useMaterialReactTable } from 'material-react-table';
-import { Box, ListItemIcon, MenuItem, Button, Modal, TextField, Typography, IconButton, RadioGroup, Radio, FormControlLabel } from '@mui/material';
-import { Edit, Delete, Close } from '@mui/icons-material';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { data } from './HotelsData';
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useMemo } from "react";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import {
+  Box,
+  ListItemIcon,
+  MenuItem,
+  Button,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { Edit, Delete, Visibility } from "@mui/icons-material";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const Hotels = () => {
-  const [open, setOpen] = useState(false);
+const hotels = () => {
+  const Navigate = useNavigate();
+  const [hotelList, setHotelList] = useState([]);
+  const [id, setId] = useState("");
+  const [hotelData, setHotelData] = useState({
+    name: "",
+    city: "",
+    address: "",
+    distance: "",
+    rating: "",
+    cheapestPrice: "",
+    featured: false,
+    type: "",
+    title: "",
+    desc: "",
+  });
 
-  const handleOpen = () => {
-    setOpen(true);
+  const resetForm = () => {
+    setHotelData({
+      name: "",
+      city: "",
+      address: "",
+      distance: "",
+      rating: "",
+      cheapestPrice: "",
+      featured: false,
+      type: "",
+      title: "",
+      desc: "",
+    });
+  };
+  const handleChange = (event) => {
+    const { name, value, type } = event.target;
+    const newValue = type === "checkbox" ? event.target.checked : value;
+    setHotelData({ ...hotelData, [name]: newValue });
+  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+  };
+  const fetchHotelData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/hotel/hotels"
+      );
+      setHotelList(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleModalClose = async () => {
+    if (id === "") {
+      //  const {id, ...data}=hotelData
+      await axios.post("http://localhost:8000/api/hotel/", hotelData);
+
+      resetForm();
+      setIsModalOpen(false);
+    } else {
+      // console.log("id", id);
+      handleUpdate(id);
+    }
   };
+  const handleUpdate = async (id) => {
+    try {
+      console.log("id", id);
+
+      await axios
+        .put(`http://localhost:8000/api/hotel/${id}`, hotelData)
+        .then(() => {
+          resetForm();
+          setId("");
+          setIsModalOpen(false);
+        });
+    } catch (error) {
+      console.error("Error updating data:", error);
+    }
+  };
+
+  let handleDelete = async (id) => {
+    // console.log("id", id);
+    try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete the data?"
+      );
+      if (confirmDelete) {
+        await axios.delete(`http://localhost:8000/api/hotel/${id}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchHotelData();
+  }, [hotelList]);
 
   const columns = useMemo(
     () => [
       {
-        id: 'bookings',
-        header: 'Bookings',
+        id: "hotels",
+        header: "Hotels",
         columns: [
           {
-            accessorKey: 'GuestName', // Change accessorKey to 'GuestName'
-            header: 'Guest Name', // Change header to 'Guest Name'
+            accessorFn: (row) => row.name,
+            id: "name",
+            header: "Name",
             size: 200,
-            // Modify Cell component if needed
+            Cell: ({ renderedCellValue, row }) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                }}
+              >
+                <img
+                  alt="avatar"
+                  height={50}
+                  src={row.original.photos[0]}
+                  loading="lazy"
+                  style={{ border: "2px solid teal", borderRadius: "5px" }}
+                />
+                <span>{renderedCellValue}</span>
+              </Box>
+            ),
           },
           {
-            accessorKey: 'Room', // Change accessorKey to 'Room'
-            header: 'Room', // Change header to 'Room'
-            size: 200,
+            accessorKey: "city",
+            header: "City",
+            size: 150,
           },
           {
-            accessorKey: 'CheckIn', // Change accessorKey to 'CheckIn'
-            header: 'Check-in', // Change header to 'Check-in'
-            size: 200,
+            accessorKey: "address",
+            header: "Address",
+            size: 150,
+          },
+          // {
+          //   accessorKey: "distance",
+          //   header: "Distance",
+          //   size: 150,
+          // },
+          {
+            accessorKey: "rating",
+            header: "Rating",
+            size: 150,
           },
           {
-            accessorKey: 'CheckOut', // Change accessorKey to 'CheckOut'
-            header: 'Check-out', // Change header to 'Check-out'
-            size: 200,
+            accessorKey: "cheapestPrice",
+            header: "Cheapest Price ($)",
+            size: 150,
           },
-          {
-            accessorKey: 'Price', // Change accessorKey to 'Price'
-            header: 'Price', // Change header to 'Price'
-            size: 200,
-          },
+          // {
+          //   accessorKey: "featured",
+          //   header: "Featured",
+          //   size: 150,
+          // },
         ],
       },
     ],
@@ -58,7 +183,7 @@ const Hotels = () => {
 
   const table = useMaterialReactTable({
     columns,
-    data,
+    data: hotelList,
     enableColumnFilterModes: true,
     enableColumnOrdering: true,
     enableGrouping: true,
@@ -66,47 +191,82 @@ const Hotels = () => {
     enableFacetedValues: true,
     enableRowActions: true,
     enableRowSelection: true,
+    getRowId: (row) => row.id,
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: true,
       columnPinning: {
-        left: ['mrt-row-expand', 'mrt-row-select'],
-        right: ['mrt-row-actions'],
+        left: ["mrt-row-expand", "mrt-row-select"],
+        right: ["mrt-row-actions"],
       },
     },
-    paginationDisplayMode: 'pages',
-    positionToolbarAlertBanner: 'bottom',
+    paginationDisplayMode: "pages",
+    positionToolbarAlertBanner: "bottom",
     muiSearchTextFieldProps: {
-      size: 'small',
-      variant: 'outlined',
+      size: "small",
+      variant: "outlined",
     },
     muiPaginationProps: {
-      color: 'secondary',
+      color: "secondary",
       rowsPerPageOptions: [5, 10, 15, 20, 25, 30],
-      shape: 'rounded',
-      variant: 'outlined',
+      shape: "rounded",
+      variant: "outlined",
     },
     renderDetailPanel: ({ row }) => (
       <Box
         sx={{
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'space-around',
-        left: '30px',
-        maxWidth: '1000px',
-        position: 'sticky',
-        width: '100%',
+          alignItems: "center",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "16px",
+          textAlign: "center",
+          maxWidth: "100%",
         }}
       >
-        {/* Render detail panel if needed */}
+        <img
+          alt="avatar"
+          src={row.original.photos[0]}
+          loading="lazy"
+          style={{
+            maxWidth: "100%",
+            height: "auto",
+            border: "2px solid teal",
+            borderRadius: "5px",
+            marginBottom: "16px",
+          }}
+        />
+        <Typography variant="h5" sx={{ marginBottom: "8px" }}>
+          {row.original.title}
+        </Typography>
+        <Typography variant="body1">{row.original.desc}</Typography>
       </Box>
     ),
-    renderRowActionMenuItems: ({ closeMenu, table }) => [
+
+    renderRowActionMenuItems: (params) => [
+      <MenuItem
+        key="view"
+        onClick={() => {
+          Navigate(`/hotel/${params.row.original._id}`);
+          params.closeMenu();
+        }}
+        sx={{ m: 0 }}
+      >
+        <ListItemIcon>
+          <Visibility />
+        </ListItemIcon>
+        View
+      </MenuItem>,
       <MenuItem
         key="edit"
         onClick={() => {
-          // Edit logic...
-          closeMenu();
+          setHotelData(
+            hotelList.find((item) => item._id === params.row.original._id)
+          );
+          setId(params.row.original._id);
+          setIsModalOpen(true);
+
+          params.closeMenu();
         }}
         sx={{ m: 0 }}
       >
@@ -118,9 +278,8 @@ const Hotels = () => {
       <MenuItem
         key="delete"
         onClick={() => {
-          const selectedRows = table.getSelectedRowModel().flatRows;
-          selectedRows.forEach((row) => table.deleteRow(row.id));
-          closeMenu();
+          handleDelete(params.row.original._id);
+          params.closeMenu();
         }}
         sx={{ m: 0 }}
       >
@@ -132,122 +291,156 @@ const Hotels = () => {
     ],
   });
 
-  const initialValues = {
-    GuestName: '',
-    Room: '',
-    CheckIn: '',
-    CheckOut: '',
-    Price: '',
-  };
-
-  const validationSchema = Yup.object().shape({
-    GuestName: Yup.string().required('Guest Name is required'),
-    Room: Yup.string().required('Room is required'),
-    CheckIn: Yup.string().required('Check-in date is required'),
-    CheckOut: Yup.string().required('Check-out date is required'),
-    Price: Yup.number().required('Price is required'),
-  });
-
   return (
-    <Box position="relative">
-      <Button
-        variant="contained"
-        color="primary"
-        style={{ position: 'relative', top: 0, left: '86%', zIndex: 1 }}
-        onClick={handleOpen}
-      >
-        Create Hotel
-      </Button>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="create-hotel-modal"
-        aria-describedby="create-hotel-modal-description"
-      >
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, maxWidth: '90%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <IconButton onClick={handleClose} aria-label="close">
-              <Close />
-            </IconButton>
-          </Box>
-          <Typography variant="h5" component="div" gutterBottom>
-            Create Hotel
-          </Typography>
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={(values, { resetForm }) => {
-              console.log(values);
-              resetForm();
-              handleClose();
-            }}
-          >
-            {({ errors, touched }) => (
-              <Form>
-                <Field
-                  name="GuestName"
-                  as={TextField}
-                  label="Guest Name"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  error={touched.GuestName && !!errors.GuestName}
-                  helperText={touched.GuestName && errors.GuestName}
-                />
-                <Field
-                  name="Room"
-                  as={TextField}
-                  label="Room"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  error={touched.Room && !!errors.Room}
-                  helperText={touched.Room && errors.Room}
-                />
-                <Field
-                  name="CheckIn"
-                  as={TextField}
-                  label="Check-in"
-                  type="date"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  error={touched.CheckIn && !!errors.CheckIn}
-                  helperText={touched.CheckIn && errors.CheckIn}
-                />
-                <Field
-                  name="CheckOut"
-                  as={TextField}
-                  label="Check-out"
-                  type="date"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  error={touched.CheckOut && !!errors.CheckOut}
-                  helperText={touched.CheckOut && errors.CheckOut}
-                />
-                <Field
-                  name="Price"
-                  as={TextField}
-                  label="Price"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  error={touched.Price && !!errors.Price}
-                  helperText={touched.Price && errors.Price}
-                />
-                <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                  Create Hotel
-                </Button>
-              </Form>
-            )}
-          </Formik>
+    <>
+      <Box mb={2} textAlign="right">
+        <Button variant="contained" color="primary" onClick={handleModalOpen}>
+          ADD NEW+
+        </Button>
+      </Box>
+      <MaterialReactTable table={table} />
+
+      {/* New Hotels Form */}
+      <Modal open={isModalOpen} onClose={handleModalClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            width: 400,
+            maxWidth: "90%",
+            maxHeight: "90%",
+            overflowY: "auto",
+          }}
+        >
+          <form>
+            <Typography variant="h5">Add New Hotel</Typography>
+            <TextField
+              variant="standard"
+              label="Name"
+              fullWidth
+              margin="normal"
+              name="name"
+              value={hotelData.name}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="City"
+              fullWidth
+              margin="normal"
+              name="city"
+              value={hotelData.city}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Address"
+              fullWidth
+              margin="normal"
+              name="address"
+              value={hotelData.address}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Distance"
+              fullWidth
+              margin="normal"
+              name="distance"
+              value={hotelData.distance}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Rating"
+              fullWidth
+              margin="normal"
+              name="rating"
+              value={hotelData.rating}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Cheapest Price"
+              fullWidth
+              margin="normal"
+              name="cheapestPrice"
+              value={hotelData.cheapestPrice}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Featured"
+              fullWidth
+              margin="normal"
+              name="featured"
+              value={hotelData.featured}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Type"
+              fullWidth
+              margin="normal"
+              name="type"
+              value={hotelData.type}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Title"
+              fullWidth
+              margin="normal"
+              name="title"
+              value={hotelData.title}
+              onChange={handleChange}
+            />
+            <TextField
+              variant="standard"
+              label="Description"
+              fullWidth
+              margin="normal"
+              name="desc"
+              value={hotelData.desc}
+              onChange={handleChange}
+            />
+            {/* Other fields */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "1rem",
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => {
+                  resetForm();
+                  setIsModalOpen(false);
+                }}
+              >
+                Close
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleModalClose}
+              >
+                {id === "" ? "Add Hotel" : "Update Hotel"}
+              </Button>
+            </Box>
+          </form>
         </Box>
       </Modal>
-      <MaterialReactTable table={table} />
-    </Box>
+    </>
   );
 };
 
-export default Hotels;
+export default hotels;
