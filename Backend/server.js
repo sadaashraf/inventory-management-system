@@ -53,7 +53,7 @@ app.use((err, req, res, next) => {
 });
 app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
-app.use("/api/hotel", HotelRoute);
+app.use("/api/hotels", HotelRoute);
 app.use("/api/room", roomRoute);
 app.listen(port, () => {
   DatabaseConnection();
