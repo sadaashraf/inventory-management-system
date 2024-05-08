@@ -39,7 +39,7 @@ import User from './components/Users/User';
 import LoginForm from "./components/Login";
 import RegisterForm from "./components/Register";
 import LogoImage from "./assets/logo.png";
-// import SingleHotel from './components/Hotels/SingleHotel';
+import Singlehotel from './components/Hotels/SingleHotel';
 
 
 
@@ -209,7 +209,7 @@ export default function PersistentDrawerLeft() {
                 <Route path="/booking" element={<Booking />} />
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/register" element={<RegisterForm />} />
-                {/* <Route path="/hotel/:id" element={<Singlehotel />} /> */}
+                <Route path="/hotel/:id" element={<Singlehotel />} />
                 {/* <Route path="/user/:id" element={<SingleUsers />} /> */}
 
               </Routes>
