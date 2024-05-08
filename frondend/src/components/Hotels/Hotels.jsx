@@ -14,11 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
-// import { data } from "./HotelsData";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Example = () => {
+const hotels = () => {
   const Navigate = useNavigate();
   const [hotelList, setHotelList] = useState([]);
   const [id, setId] = useState("");
@@ -62,7 +61,7 @@ const Example = () => {
   const fetchHotelData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/hotels/hotels"
+        "http://localhost:8000/api/hotel/hotels"
       );
       setHotelList(response.data);
     } catch (error) {
@@ -73,7 +72,7 @@ const Example = () => {
   const handleModalClose = async () => {
     if (id === "") {
       //  const {id, ...data}=hotelData
-      await axios.post("http://localhost:8000/api/hotels/", hotelData);
+      await axios.post("http://localhost:8000/api/hotel/", hotelData);
 
       resetForm();
       setIsModalOpen(false);
@@ -87,7 +86,7 @@ const Example = () => {
       console.log("id", id);
 
       await axios
-        .put(`http://localhost:8000/api/hotels/${id}`, hotelData)
+        .put(`http://localhost:8000/api/hotel/${id}`, hotelData)
         .then(() => {
           resetForm();
           setId("");
@@ -105,7 +104,7 @@ const Example = () => {
         "Are you sure you want to delete the data?"
       );
       if (confirmDelete) {
-        await axios.delete(`http://localhost:8000/api/hotels/${id}`);
+        await axios.delete(`http://localhost:8000/api/hotel/${id}`);
       }
     } catch (error) {
       console.log(error);
@@ -444,4 +443,4 @@ const Example = () => {
   );
 };
 
-export default Example;
+export default hotels;
