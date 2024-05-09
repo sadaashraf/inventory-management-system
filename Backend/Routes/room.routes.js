@@ -7,7 +7,7 @@ import {
   updateRoom,
   updateRoomAvailability,
 } from "../Controller/room.js";
-import { verifyAdmin } from "../utils/verifyToken.js";
+import { verifyAdmin } from "../Utils/verifyToken.js";
 
 const router = express.Router();
 //CREATE
