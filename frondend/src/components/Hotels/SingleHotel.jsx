@@ -19,7 +19,7 @@ const SingleHotel = () => {
   const fetchHotelData = async (params) => {
     try {
       await axios
-        .get(`http://localhost:8000/api/hotels/search/${params.id}`)
+        .get(`http://localhost:8000/api/hotel/find/${params.id}`)
         .then((res) => {
           setData(res.data);
         });
@@ -31,19 +31,25 @@ const SingleHotel = () => {
     fetchHotelData(params);
   }, []);
   return (
-    <Card>
+    <Card style={{ width: '50%', marginTop: '3%', marginLeft:'10%' }}>
       <CardContent>
         <Typography variant="h5" component="h2">
           {data.name}
         </Typography>
-        <Typography color="textSecondary" gutterBottom>
+        <Typography color="h6" gutterBottom> Location:<b/>  
           {data.city}
         </Typography>
         <Typography variant="body2" component="p">
           Address: {data.address}
         </Typography>
         <Typography variant="body2" component="p">
+          Type: {data.type}
+        </Typography>
+        <Typography variant="body2" component="p">
           Rating: {data.rating}
+        </Typography>
+        <Typography variant="body2" component="p">
+          Title: {data.title}
         </Typography>
         <Typography variant="body2" component="p">
           Cheapest Price: {data.cheapestPrice}
@@ -53,12 +59,6 @@ const SingleHotel = () => {
         </Typography>
         <Typography variant="body2" component="p">
           Featured: {data.featured ? "Yes" : "No"}
-        </Typography>
-        <Typography variant="body2" component="p">
-          Title: {data.title}
-        </Typography>
-        <Typography variant="body2" component="p">
-          Type: {data.type}
         </Typography>
       </CardContent>
     </Card>
