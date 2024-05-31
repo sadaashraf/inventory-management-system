@@ -1,0 +1,12 @@
+.kg-item {
+    border: 2px solid;
+    list-style: none; /* Removes the default bullet points */
+    text-align: left; /* Ensures text is left-aligned*/
+
+}
+
+.food {
+    background-color:rgba(192, 201, 200, 0.637);
+    padding: 0; /* Removes default padding */
+    margin: 0; /* Removes default margin */
+}

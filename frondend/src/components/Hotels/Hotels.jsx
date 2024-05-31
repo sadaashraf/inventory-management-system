@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+
 import { useState, useEffect, useMemo } from "react";
 import {
   MaterialReactTable,
