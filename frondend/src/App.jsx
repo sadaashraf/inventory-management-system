@@ -7,7 +7,7 @@ function App() {
   let foodIteam=["Egg","Dal","Roti","Rice","Barger","Slice"]
   return (
     <>
-    <h1>Food Iteam</h1>
+    <h1 className='h1'>Food Iteam</h1>
       <FoodItem items={foodIteam}/>
       <Error items={foodIteam}/>
     </>

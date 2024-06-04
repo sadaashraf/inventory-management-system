@@ -2,11 +2,23 @@
     border: 2px solid;
     list-style: none; /* Removes the default bullet points */
     text-align: left; /* Ensures text is left-aligned*/
-
+    font-size: 40px;
 }
 
 .food {
     background-color:rgba(192, 201, 200, 0.637);
     padding: 0; /* Removes default padding */
     margin: 0; /* Removes default margin */
+    /* border-width: 10px;  */
+ 
+}
+.Button{
+    float: right;
+    font-size: 35px;
+    border-radius: 5px;
+    background-color:blue;
+    color: white;
+}
+.h1{
+    background-color: rgb(245, 245, 245);
 }
