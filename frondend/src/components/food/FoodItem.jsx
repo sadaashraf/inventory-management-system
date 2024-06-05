@@ -4,7 +4,9 @@ const FoodItem = ({ items }) => {
     return (
         <ul className="food">
             {items.map((item) => (
-                <Item key={item} foodItem={item} />
+                <Item key={item} foodItem={item}
+                handleOnClick={()=>console.log("Click")}
+                />
             ))}
         </ul>
     );

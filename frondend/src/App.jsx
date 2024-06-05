@@ -2,15 +2,17 @@ import React from 'react'
 import FoodItem from './components/food/FoodItem';
 import Error from './components/food/Error';
 import './App.css';
-
+import Container from './components/food/Container';
+import Inputext from './components/food/Inputext';
 function App() {
   let foodIteam=["Egg","Dal","Roti","Rice","Barger","Slice"]
   return (
-    <>
+  <Container>
     <h1 className='h1'>Food Iteam</h1>
+      <Inputext/>
       <FoodItem items={foodIteam}/>
       <Error items={foodIteam}/>
-    </>
+</Container>
   )
 }
 export default App;
