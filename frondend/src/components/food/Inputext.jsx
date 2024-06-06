@@ -1,7 +1,5 @@
-const Inputext=()=>{
-    const handleOnChange=(event)=>{
-        console.log(event.target.value);
-    };
+const Inputext=({handleOnChange})=>{
+  
     return(
     <input type="text"
      placeholder="Enter Food items"

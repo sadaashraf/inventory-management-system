@@ -6,10 +6,15 @@ import Container from './components/food/Container';
 import Inputext from './components/food/Inputext';
 function App() {
   let foodIteam=["Egg","Dal","Roti","Rice","Barger","Slice"]
+
+ const handleOnChange= (event)=>{
+    console.log(event.target.value);
+}
   return (
   <Container>
     <h1 className='h1'>Food Iteam</h1>
-      <Inputext/>
+      <Inputext
+      handleOnChange={handleOnChange}/>
       <FoodItem items={foodIteam}/>
       <Error items={foodIteam}/>
 </Container>

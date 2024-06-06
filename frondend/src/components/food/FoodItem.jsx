@@ -5,7 +5,7 @@ const FoodItem = ({ items }) => {
         <ul className="food">
             {items.map((item) => (
                 <Item key={item} foodItem={item}
-                handleOnClick={()=>console.log("Click")}
+                handleOnClick={()=>console.log(`${items} being bought`)}
                 />
             ))}
         </ul>
