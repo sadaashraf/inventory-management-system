@@ -3,10 +3,9 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import usersRoute from "./Routes/user.routes.js";
-import authRoute from "./Routes/AuthRoutes.js";
-import HotelRoute from "./Routes/hotel.routes.js";
-import roomRoute from "./Routes/room.routes.js";
+
+import purchaseRoute from "./Routes/purchase.routes.js";
+import saleRoutes from "./Routes/sale.routes.js";
 
 const app = express();
 
@@ -28,8 +27,8 @@ const DatabaseConnection = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("Connected to mongoDB.");
-  } catch {
-    console.log("Connection Error");
+  } catch(error) {
+    console.log("Connection Error ", error);
   }
 };
 
@@ -53,10 +52,10 @@ app.use((err, req, res, next) => {
     stack: err.stack,
   });
 });
-app.use("/api/auth", authRoute);
-app.use("/api/users", usersRoute);
-app.use("/api/hotel", HotelRoute);
-app.use("/api/room", roomRoute);
+
+app.use("/api/purchases", purchaseRoute);
+app.use('/api/sales', saleRoutes);
+
 app.listen(port, () => {
   DatabaseConnection();
   console.log(`Server Listen on port ${port}`);
