@@ -9,6 +9,10 @@ const saleSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  unit: {
+    type: String,
+    required: true,
+  },
   unitPrice: {
     type: Number,
     required: true,

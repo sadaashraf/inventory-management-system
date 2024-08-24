@@ -1,4 +1,4 @@
-import Sale from '../Models/sale.js';
+import Sale from '../Models/Sale.js';
 
 // Create a new sale
 export const createSale = async (req, res) => {
@@ -17,7 +17,7 @@ export const getSales = async (req, res) => {
     const sales = await Sale.find();
     res.status(200).json(sales);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching sales: " + error.message });
   }
 };
 
@@ -25,10 +25,14 @@ export const getSales = async (req, res) => {
 export const updateSale = async (req, res) => {
   try {
     const sale = await Sale.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!sale) return res.status(404).json({ message: "Sale not found" });
+
+    if (!sale) {
+      return res.status(404).json({ message: "Sale not found" });
+    }
+
     res.status(200).json(sale);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: "Error updating sale: " + error.message });
   }
 };
 
@@ -36,9 +40,13 @@ export const updateSale = async (req, res) => {
 export const deleteSale = async (req, res) => {
   try {
     const sale = await Sale.findByIdAndDelete(req.params.id);
-    if (!sale) return res.status(404).json({ message: "Sale not found" });
+
+    if (!sale) {
+      return res.status(404).json({ message: "Sale not found" });
+    }
+
     res.status(200).json({ message: "Sale deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error deleting sale: " + error.message });
   }
 };
