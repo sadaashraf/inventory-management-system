@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Table, Input, Button, Space } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -9,6 +9,7 @@ const Stock = () => {
   const [searchedColumn, setSearchedColumn] = useState("");
   const [stockData, setStockData] = useState([]);
 
+  // Fetch stock data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -24,18 +25,22 @@ const Stock = () => {
     fetchData();
   }, []);
 
+  // Calculate stock based on purchase and sales data
   const calculateStock = (purchaseData, saleData) => {
     const updatedStock = purchaseData.reduce((acc, purchase) => {
       const existingItem = acc.find(item => item.itemName === purchase.itemName);
       if (existingItem) {
         existingItem.purchaseQuantity += purchase.quantity;
         existingItem.availableQuantity += purchase.quantity;
+        // Ensure unit of measure is consistent
+        existingItem.unit = purchase.unit;
       } else {
         acc.push({
           itemName: purchase.itemName,
           purchaseQuantity: purchase.quantity,
           saleQuantity: 0,
           availableQuantity: purchase.quantity,
+          unit: purchase.unit,
         });
       }
       return acc;
@@ -52,6 +57,7 @@ const Stock = () => {
           purchaseQuantity: 0,
           saleQuantity: sale.quantity,
           availableQuantity: -sale.quantity,
+          unit: sale.unit,
         });
       }
     });
@@ -59,7 +65,8 @@ const Stock = () => {
     return updatedStock;
   };
 
-  const getColumnSearchProps = (dataIndex) => ({
+  // Define search functionality for columns
+  const getColumnSearchProps = useCallback((dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
       selectedKeys,
@@ -114,19 +121,22 @@ const Stock = () => {
       ) : (
         text
       ),
-  });
+  }), [searchText, searchedColumn]);
 
+  // Handle search action
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
 
+  // Handle reset action
   const handleReset = (clearFilters) => {
     clearFilters();
     setSearchText("");
   };
 
+  // Define table columns
   const columns = [
     {
       title: "Item Name",
@@ -139,18 +149,27 @@ const Stock = () => {
       dataIndex: "purchaseQuantity",
       key: "purchaseQuantity",
       sorter: (a, b) => a.purchaseQuantity - b.purchaseQuantity,
+      render: (text, record) => (
+        <span>{text} {record.unit}</span>
+      ),
     },
     {
       title: "Sale Quantity",
       dataIndex: "saleQuantity",
       key: "saleQuantity",
       sorter: (a, b) => a.saleQuantity - b.saleQuantity,
+      render: (text, record) => (
+        <span>{text} {record.unit}</span>
+      ),
     },
     {
       title: "Available Quantity",
       dataIndex: "availableQuantity",
       key: "availableQuantity",
       sorter: (a, b) => a.availableQuantity - b.availableQuantity,
+      render: (text, record) => (
+        <span>{text} {record.unit}</span>
+      ),
     },
   ];
 

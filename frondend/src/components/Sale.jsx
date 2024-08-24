@@ -1,57 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, Modal, Form, message } from "antd";
+import { Table, Input, Button, Space, Modal, message, Form } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
+import dayjs from 'dayjs';
+import SaleForm from './SaleForm';
 
-const API_URL = "http://localhost:8000/api/sales"; // Replace with your backend URL
-
-// Create a new sale
-export const createSale = async (saleData) => {
-  try {
-    const response = await axios.post(API_URL, saleData);
-    console.log("Sale Created:", response.data); // Debugging
-    return response.data;
-  } catch (error) {
-    console.error("Error creating sale:", error.response || error.message); // Debugging
-    throw new Error(error.response?.data?.message || "Error creating sale");
-  }
-};
-
-// Get all sales
-export const getSales = async () => {
-  try {
-    const response = await axios.get(API_URL);
-    console.log("Sales Fetched:", response.data); // Debugging
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching sales:", error.response || error.message); // Debugging
-    throw new Error(error.response?.data?.message || "Error fetching sales");
-  }
-};
-
-// Update a sale
-export const updateSale = async (id, saleData) => {
-  try {
-    const response = await axios.put(`${API_URL}/${id}`, saleData);
-    console.log("Sale Updated:", response.data); // Debugging
-    return response.data;
-  } catch (error) {
-    console.error("Error updating sale:", error.response || error.message); // Debugging
-    throw new Error(error.response?.data?.message || "Error updating sale");
-  }
-};
-
-// Delete a sale
-export const deleteSale = async (id) => {
-  try {
-    await axios.delete(`${API_URL}/${id}`);
-    console.log("Sale Deleted:", id); // Debugging
-  } catch (error) {
-    console.error("Error deleting sale:", error.response || error.message); // Debugging
-    throw new Error(error.response?.data?.message || "Error deleting sale");
-  }
-};
+const API_URL = "http://localhost:8000/api/sales";
 
 const Sale = () => {
   const [searchText, setSearchText] = useState("");
@@ -59,13 +14,17 @@ const Sale = () => {
   const [dataSource, setDataSource] = useState([]);
   const [editingSale, setEditingSale] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm(); // Create the form instance
 
   useEffect(() => {
     const fetchSales = async () => {
       try {
-        const sales = await axios.get(API_URL);
-        setDataSource(sales.data);
+        const response = await axios.get(API_URL);
+        const sales = response.data.map(sale => ({
+          ...sale,
+          saleDate: sale.saleDate ? dayjs(sale.saleDate) : null
+        }));
+        setDataSource(sales);
       } catch (error) {
         console.error("Error fetching sales:", error.message);
         message.error("Error fetching sales data");
@@ -74,7 +33,15 @@ const Sale = () => {
     fetchSales();
   }, []);
 
+  useEffect(() => {
+    if (!editingSale) {
+      form.resetFields(); // Reset form fields when no sale is being edited
+    }
+  }, [editingSale, form]);
+
   const showModal = () => {
+    setEditingSale(null);
+    form.resetFields(); // Ensure form is reset for a new sale
     setIsModalOpen(true);
   };
 
@@ -82,19 +49,24 @@ const Sale = () => {
     try {
       const values = await form.validateFields();
       if (editingSale) {
-        // Update sale
-        const updatedSale = await axios.put(`${API_URL}/${editingSale._id}`, values);
-        setDataSource(dataSource.map((item) => (item._id === editingSale._id ? updatedSale.data : item)));
+        const updatedSale = await axios.put(`${API_URL}/${editingSale._id}`, {
+          ...values,
+          saleDate: values.saleDate ? values.saleDate.format('YYYY-MM-DD') : null
+        });
+        setDataSource(dataSource.map((item) =>
+          item._id === editingSale._id ? updatedSale.data : item
+        ));
         message.success("Sale updated successfully");
       } else {
-        // Create new sale
-        const newSale = await axios.post(API_URL, values);
+        const newSale = await axios.post(API_URL, {
+          ...values,
+          saleDate: values.saleDate ? values.saleDate.format('YYYY-MM-DD') : null
+        });
         setDataSource([...dataSource, newSale.data]);
         message.success("Sale created successfully");
       }
       setIsModalOpen(false);
-      form.resetFields();
-      setEditingSale(null);
+      form.resetFields(); // Reset form fields after submission
     } catch (error) {
       message.error("Error submitting the form");
     }
@@ -102,13 +74,15 @@ const Sale = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
-    setEditingSale(null);
+    form.resetFields(); // Reset form fields on cancel
   };
 
   const editSale = (record) => {
     setEditingSale(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      saleDate: record.saleDate ? dayjs(record.saleDate) : null
+    });
     setIsModalOpen(true);
   };
 
@@ -185,22 +159,25 @@ const Sale = () => {
       ...getColumnSearchProps("itemName"),
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      key: 'quantity',
       sorter: (a, b) => a.quantity - b.quantity,
+      render: (text, record) => (
+        <span>{text} {record.unit}</span>
+      ),
     },
     {
       title: "Unit Price",
       dataIndex: "unitPrice",
       key: "unitPrice",
       sorter: (a, b) => a.unitPrice - b.unitPrice,
-      render: (text) => `$${text}`,
+      render: (text) => `${text}`,
     },
     {
       title: "Total Price",
       key: "totalPrice",
-      render: (text, record) => `$${record.quantity * record.unitPrice}`,
+      render: (text, record) => `${record.quantity * record.unitPrice}`,
     },
     {
       title: "Customer",
@@ -213,6 +190,7 @@ const Sale = () => {
       dataIndex: "saleDate",
       key: "saleDate",
       sorter: (a, b) => new Date(a.saleDate) - new Date(b.saleDate),
+      render: (date) => dayjs(date).format("YYYY-MM-DD"),
     },
     {
       title: "Actions",
@@ -237,24 +215,14 @@ const Sale = () => {
       </Button>
       <Table columns={columns} dataSource={dataSource} rowKey="_id" />
 
-      <Modal title={editingSale ? "Edit Sale" : "Add Sale"} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-        <Form form={form} layout="vertical">
-          <Form.Item name="itemName" label="Item Name" rules={[{ required: true, message: "Please enter the item name" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="quantity" label="Quantity" rules={[{ required: true, message: "Please enter the quantity" }]}>
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item name="unitPrice" label="Unit Price" rules={[{ required: true, message: "Please enter the unit price" }]}>
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item name="customer" label="Customer" rules={[{ required: true, message: "Please enter the customer name" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="saleDate" label="Sale Date" rules={[{ required: true, message: "Please enter the sale date" }]}>
-            <Input type="date" />
-          </Form.Item>
-        </Form>
+      <Modal
+        title={editingSale ? "Edit Sale" : "Add Sale"}
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okText={editingSale ? "Update" : "Add"}
+      >
+        <SaleForm form={form} initialValues={editingSale} />
       </Modal>
     </div>
   );

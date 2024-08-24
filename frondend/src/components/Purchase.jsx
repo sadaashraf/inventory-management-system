@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, Modal, Form } from "antd";
+import { Table, Input, Button, Space, Modal } from "antd";
 import Highlighter from "react-highlight-words";
-
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
+import moment from "moment";
+import PurchaseForm from './PurchaseForm';
 
 const Purchase = () => {
   const [searchText, setSearchText] = useState("");
@@ -55,19 +56,12 @@ const Purchase = () => {
   };
 
   const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: "block" }}
         />
@@ -81,11 +75,7 @@ const Purchase = () => {
           >
             Search
           </Button>
-          <Button
-            onClick={() => handleReset(clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
+          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
         </Space>
@@ -95,9 +85,7 @@ const Purchase = () => {
       <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
     onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : "",
+      record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : "",
     render: (text) =>
       searchedColumn === dataIndex ? (
         <Highlighter
@@ -157,22 +145,24 @@ const Purchase = () => {
       ...getColumnSearchProps("itemName"),
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      key: 'quantity',
       sorter: (a, b) => a.quantity - b.quantity,
+      render: (text, record) => (
+        <span>{text} {record.unit}</span>
+      ),
     },
     {
-      title: "Unit Price",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
+      title: 'Unit Price',
+      dataIndex: 'unitPrice',
+      key: 'unitPrice',
       sorter: (a, b) => a.unitPrice - b.unitPrice,
-      render: (text) => `$${text}`,
     },
     {
-      title: "Total Price",
-      key: "totalPrice",
-      render: (text, record) => `$${record.quantity * record.unitPrice}`,
+      title: 'Total Price',
+      key: 'totalPrice',
+      render: (text, record) => (record.quantity * record.unitPrice),
     },
     {
       title: "Supplier",
@@ -185,6 +175,7 @@ const Purchase = () => {
       dataIndex: "purchaseDate",
       key: "purchaseDate",
       sorter: (a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate),
+      render: (date) => moment(date).format("YYYY-MM-DD"),
     },
     {
       title: "Actions",
@@ -220,10 +211,10 @@ const Purchase = () => {
         pagination={false}
         summary={() => (
           <Table.Summary.Row>
-            <Table.Summary.Cell index={0} colSpan={4} />
-            <Table.Summary.Cell index={1}>Total</Table.Summary.Cell>
+            <Table.Summary.Cell index={0} colSpan={2} />
+            <Table.Summary.Cell index={1}>Total Purchase</Table.Summary.Cell>
             <Table.Summary.Cell index={2} colSpan={2}>
-              <strong>${calculateTotalPurchase().toFixed(2)}</strong>
+              <strong>{calculateTotalPurchase()}</strong>
             </Table.Summary.Cell>
           </Table.Summary.Row>
         )}
@@ -231,45 +222,17 @@ const Purchase = () => {
 
       <Modal
         title={editingItem ? "Edit Purchase" : "Add Purchase"}
-        open={isModalOpen} // updated prop
+        open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
       >
         <PurchaseForm
           initialValues={editingItem || { itemName: "", quantity: "", unitPrice: "", supplier: "", purchaseDate: "" }}
           onFinish={handleOk}
+          onCancel={handleCancel}
         />
       </Modal>
     </div>
-  );
-};
-
-const PurchaseForm = ({ initialValues, onFinish }) => {
-  const [form] = Form.useForm();
-  
-  return (
-    <Form form={form} initialValues={initialValues} onFinish={onFinish} layout="vertical">
-      <Form.Item name="itemName" label="Item Name" rules={[{ required: true, message: "Please input the item name!" }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name="quantity" label="Quantity" rules={[{ required: true, message: "Please input the quantity!" }]}>
-        <Input type="number" />
-      </Form.Item>
-      <Form.Item name="unitPrice" label="Unit Price" rules={[{ required: true, message: "Please input the unit price!" }]}>
-        <Input type="number" />
-      </Form.Item>
-      <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: "Please input the supplier!" }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name="purchaseDate" label="Purchase Date" rules={[{ required: true, message: "Please input the purchase date!" }]}>
-        <Input type="date" />
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          {initialValues ? "Update" : "Add"}
-        </Button>
-      </Form.Item>
-    </Form>
   );
 };
 
