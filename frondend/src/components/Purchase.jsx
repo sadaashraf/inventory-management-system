@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, Modal } from "antd";
+import { Table, Input, Button, Space, Modal, message } from "antd";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 import PurchaseForm from './PurchaseForm';
@@ -12,17 +12,21 @@ const Purchase = () => {
   const [dataSource, setDataSource] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchPurchases();
   }, []);
 
   const fetchPurchases = async () => {
+    setLoading(true);
     try {
       const response = await axios.get("http://localhost:8000/api/purchases");
       setDataSource(response.data);
     } catch (error) {
-      console.error("Error fetching purchases", error);
+      message.error("Error fetching purchases");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,8 +34,9 @@ const Purchase = () => {
     try {
       const response = await axios.post("http://localhost:8000/api/purchases", purchaseData);
       setDataSource((prevData) => [...prevData, response.data]);
+      message.success("Purchase added successfully");
     } catch (error) {
-      console.error("Error adding purchase", error);
+      message.error("Error adding purchase");
     }
   };
 
@@ -41,8 +46,9 @@ const Purchase = () => {
       setDataSource((prevData) =>
         prevData.map((item) => (item._id === id ? response.data : item))
       );
+      message.success("Purchase updated successfully");
     } catch (error) {
-      console.error("Error updating purchase", error);
+      message.error("Error updating purchase");
     }
   };
 
@@ -50,8 +56,9 @@ const Purchase = () => {
     try {
       await axios.delete(`http://localhost:8000/api/purchases/${id}`);
       setDataSource((prevData) => prevData.filter((item) => item._id !== id));
+      message.success("Purchase deleted successfully");
     } catch (error) {
-      console.error("Error deleting purchase", error);
+      message.error("Error deleting purchase");
     }
   };
 
@@ -71,11 +78,11 @@ const Purchase = () => {
             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
-            style={{ width: 90 }}
+            style={{ width: 80 }}
           >
             Search
           </Button>
-          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 80 }}>
             Reset
           </Button>
         </Space>
@@ -139,6 +146,13 @@ const Purchase = () => {
 
   const columns = [
     {
+      title: "Purchase Date",
+      dataIndex: "purchaseDate",
+      key: "purchaseDate",
+      sorter: (a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate),
+      render: (date) => moment(date).format("YYYY-MM-DD"),
+    },
+    {
       title: "Item Name",
       dataIndex: "itemName",
       key: "itemName",
@@ -170,24 +184,14 @@ const Purchase = () => {
       key: "supplier",
       ...getColumnSearchProps("supplier"),
     },
-    {
-      title: "Purchase Date",
-      dataIndex: "purchaseDate",
-      key: "purchaseDate",
-      sorter: (a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate),
-      render: (date) => moment(date).format("YYYY-MM-DD"),
-    },
+
     {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => handleEdit(record)}>
-            Edit
-          </Button>
-          <Button type="link" danger onClick={() => handleDelete(record._id)}>
-            Delete
-          </Button>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button type="link" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record._id)} />
         </Space>
       ),
     },
@@ -209,11 +213,12 @@ const Purchase = () => {
         dataSource={dataSource}
         rowKey={(record) => record._id}
         pagination={false}
+        loading={loading}
         summary={() => (
           <Table.Summary.Row>
-            <Table.Summary.Cell index={0} colSpan={2} />
+            <Table.Summary.Cell index={0} colSpan={5} />
             <Table.Summary.Cell index={1}>Total Purchase</Table.Summary.Cell>
-            <Table.Summary.Cell index={2} colSpan={2}>
+            <Table.Summary.Cell index={2} colSpan={1}>
               <strong>{calculateTotalPurchase()}</strong>
             </Table.Summary.Cell>
           </Table.Summary.Row>

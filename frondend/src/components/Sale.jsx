@@ -1,108 +1,69 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, Modal, message, Form } from "antd";
+import { Table, Input, Button, Space, Modal, message } from "antd";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
-import dayjs from 'dayjs';
-import SaleForm from './SaleForm';
-
-const API_URL = "http://localhost:8000/api/sales";
+import moment from "moment";
+import SaleForm from "./SaleForm";
 
 const Sale = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [dataSource, setDataSource] = useState([]);
-  const [editingSale, setEditingSale] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm(); // Create the form instance
+  const [editingItem, setEditingItem] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchSales = async () => {
-      try {
-        const response = await axios.get(API_URL);
-        const sales = response.data.map(sale => ({
-          ...sale,
-          saleDate: sale.saleDate ? dayjs(sale.saleDate) : null
-        }));
-        setDataSource(sales);
-      } catch (error) {
-        console.error("Error fetching sales:", error.message);
-        message.error("Error fetching sales data");
-      }
-    };
     fetchSales();
   }, []);
 
-  useEffect(() => {
-    if (!editingSale) {
-      form.resetFields(); // Reset form fields when no sale is being edited
-    }
-  }, [editingSale, form]);
-
-  const showModal = () => {
-    setEditingSale(null);
-    form.resetFields(); // Ensure form is reset for a new sale
-    setIsModalOpen(true);
-  };
-
-  const handleOk = async () => {
+  const fetchSales = async () => {
+    setLoading(true);
     try {
-      const values = await form.validateFields();
-      if (editingSale) {
-        const updatedSale = await axios.put(`${API_URL}/${editingSale._id}`, {
-          ...values,
-          saleDate: values.saleDate ? values.saleDate.format('YYYY-MM-DD') : null
-        });
-        setDataSource(dataSource.map((item) =>
-          item._id === editingSale._id ? updatedSale.data : item
-        ));
-        message.success("Sale updated successfully");
-      } else {
-        const newSale = await axios.post(API_URL, {
-          ...values,
-          saleDate: values.saleDate ? values.saleDate.format('YYYY-MM-DD') : null
-        });
-        setDataSource([...dataSource, newSale.data]);
-        message.success("Sale created successfully");
-      }
-      setIsModalOpen(false);
-      form.resetFields(); // Reset form fields after submission
+      const response = await axios.get("http://localhost:8000/api/sales");
+      setDataSource(response.data);
     } catch (error) {
-      message.error("Error submitting the form");
+      message.error("Error fetching sales");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    form.resetFields(); // Reset form fields on cancel
-  };
-
-  const editSale = (record) => {
-    setEditingSale(record);
-    form.setFieldsValue({
-      ...record,
-      saleDate: record.saleDate ? dayjs(record.saleDate) : null
-    });
-    setIsModalOpen(true);
-  };
-
-  const deleteSaleHandler = async (id) => {
+  const addSale = async (saleData) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      setDataSource(dataSource.filter((item) => item._id !== id));
+      const response = await axios.post("http://localhost:8000/api/sales", saleData);
+      setDataSource((prevData) => [...prevData, response.data]);
+      message.success("Sale added successfully");
+    } catch (error) {
+      message.error("Error adding sale");
+    }
+  };
+
+  const updateSale = async (id, saleData) => {
+    try {
+      const response = await axios.put(`http://localhost:8000/api/sales/${id}`, saleData);
+      setDataSource((prevData) =>
+        prevData.map((item) => (item._id === id ? response.data : item))
+      );
+      message.success("Sale updated successfully");
+    } catch (error) {
+      message.error("Error updating sale");
+    }
+  };
+
+  const deleteSale = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/sales/${id}`);
+      setDataSource((prevData) => prevData.filter((item) => item._id !== id));
       message.success("Sale deleted successfully");
     } catch (error) {
-      message.error("Error deleting the sale");
+      message.error("Error deleting sale");
     }
   };
 
   const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
           placeholder={`Search ${dataIndex}`}
@@ -117,11 +78,11 @@ const Sale = () => {
             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
-            style={{ width: 90 }}
+            style={{ width: 80 }}
           >
             Search
           </Button>
-          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 80 }}>
             Reset
           </Button>
         </Space>
@@ -134,7 +95,12 @@ const Sale = () => {
       record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : "",
     render: (text) =>
       searchedColumn === dataIndex ? (
-        <Highlighter highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }} searchWords={[searchText]} autoEscape textToHighlight={text ? text.toString() : ""} />
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
       ) : (
         text
       ),
@@ -151,7 +117,41 @@ const Sale = () => {
     setSearchText("");
   };
 
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (record) => {
+    setEditingItem(record);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    deleteSale(id);
+  };
+
+  const handleOk = (values) => {
+    if (editingItem) {
+      updateSale(editingItem._id, values);
+    } else {
+      addSale(values);
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   const columns = [
+    {
+      title: "Sale Date",
+      dataIndex: "saleDate",
+      key: "saleDate",
+      sorter: (a, b) => new Date(a.saleDate) - new Date(b.saleDate),
+      render: (date) => moment(date).format("YYYY-MM-DD"),
+    },
     {
       title: "Item Name",
       dataIndex: "itemName",
@@ -168,16 +168,15 @@ const Sale = () => {
       ),
     },
     {
-      title: "Unit Price",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
+      title: 'Unit Price',
+      dataIndex: 'unitPrice',
+      key: 'unitPrice',
       sorter: (a, b) => a.unitPrice - b.unitPrice,
-      render: (text) => `${text}`,
     },
     {
-      title: "Total Price",
-      key: "totalPrice",
-      render: (text, record) => `${record.quantity * record.unitPrice}`,
+      title: 'Total Price',
+      key: 'totalPrice',
+      render: (text, record) => (record.quantity * record.unitPrice),
     },
     {
       title: "Customer",
@@ -185,44 +184,58 @@ const Sale = () => {
       key: "customer",
       ...getColumnSearchProps("customer"),
     },
-    {
-      title: "Sale Date",
-      dataIndex: "saleDate",
-      key: "saleDate",
-      sorter: (a, b) => new Date(a.saleDate) - new Date(b.saleDate),
-      render: (date) => dayjs(date).format("YYYY-MM-DD"),
-    },
+ 
     {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => editSale(record)}>
-            Edit
-          </Button>
-          <Button type="link" danger onClick={() => deleteSaleHandler(record._id)}>
-            Delete
-          </Button>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button type="link" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record._id)} />
         </Space>
       ),
     },
   ];
 
+  const calculateTotalSale = () => {
+    return dataSource.reduce((total, item) => total + item.quantity * item.unitPrice, 0);
+  };
+
   return (
     <div>
-      <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-        Add Sale
-      </Button>
-      <Table columns={columns} dataSource={dataSource} rowKey="_id" />
+      <Space style={{ marginBottom: 16 }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+          Add Sale
+        </Button>
+      </Space>
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        rowKey={(record) => record._id}
+        pagination={false}
+        loading={loading}
+        summary={() => (
+          <Table.Summary.Row>
+            <Table.Summary.Cell index={0} colSpan={5} />
+            <Table.Summary.Cell index={1}>Total Sale</Table.Summary.Cell>
+            <Table.Summary.Cell index={2} colSpan={1}>
+              <strong>{calculateTotalSale()}</strong>
+            </Table.Summary.Cell>
+          </Table.Summary.Row>
+        )}
+      />
 
       <Modal
-        title={editingSale ? "Edit Sale" : "Add Sale"}
+        title={editingItem ? "Edit Sale" : "Add Sale"}
         open={isModalOpen}
-        onOk={handleOk}
         onCancel={handleCancel}
-        okText={editingSale ? "Update" : "Add"}
+        footer={null}
       >
-        <SaleForm form={form} initialValues={editingSale} />
+        <SaleForm
+          initialValues={editingItem || { itemName: "", quantity: "", unitPrice: "", customer: "", saleDate: "" }}
+          onFinish={handleOk}
+          onCancel={handleCancel}
+        />
       </Modal>
     </div>
   );

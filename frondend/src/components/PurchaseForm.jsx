@@ -41,6 +41,7 @@ const PurchaseForm = ({ initialValues, onFinish, onCancel }) => {
             label="Quantity" 
             rules={[{ required: true, message: "Please input the quantity!" }]}
           >
+          
             <Input type="number" />
           </Form.Item>
         </Col>
@@ -94,9 +95,10 @@ const PurchaseForm = ({ initialValues, onFinish, onCancel }) => {
 
       <Form.Item wrapperCol={{ span: 24 }}>
         <Space>
-          <Button type="primary" htmlType="submit">
-            {initialValues ? "Update" : "Add"}
-          </Button>
+         <Button type="primary" htmlType="submit">
+          Add
+        </Button>
+
           <Button
             onClick={() => {
               form.resetFields();
