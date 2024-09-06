@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 
 import purchaseRoute from "./Routes/purchase.routes.js";
 import saleRoutes from "./Routes/sale.routes.js";
-
+// import stockRoutes from "./Routes/stock.routes.js";
 const app = express();
 
 dotenv.config();
@@ -37,10 +37,11 @@ mongoose.connection.on("disconnected", () => {
 });
 
 app.get("/", (req, res) => {
+  
   res.json({ message: "Hello" });
 });
 
-const port = process.env.PORT || 9000;
+const port = process.env.PORT || 8000;
 
 app.use((err, req, res, next) => {
   const errorStatus = err.status || 500;
@@ -55,6 +56,7 @@ app.use((err, req, res, next) => {
 
 app.use("/api/purchases", purchaseRoute);
 app.use('/api/sales', saleRoutes);
+// app.use('/api/stock', stockRoutes);
 
 app.listen(port, () => {
   DatabaseConnection();
