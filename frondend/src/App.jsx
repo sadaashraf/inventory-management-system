@@ -24,7 +24,9 @@ import StoreIcon from '@mui/icons-material/Store'; // New icon for Stock
 import Sale from './components/Sale';
 import Purchase from './components/Purchase';
 import Stock from './components/Stock';
+import Supplier from './components/Suppliers';
 import { GlobalStyles } from '@mui/material';
+import SupplierDetail from './components/SupplierDetail';
 
 const drawerWidth = 240;
 
@@ -119,6 +121,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
 const menuItems = [
   { title: 'Dashboard', icon: <DashboardIcon />, path: '/' },
   { title: 'Purchase', icon: <InventoryIcon />, path: '/purchase' },
+  { title: 'Supplier', icon: <InventoryIcon />, path: '/supplier' },
   { title: 'Sale', icon: <MonetizationOnIcon />, path: '/sale' }, // Updated icon for Sale
   { title: 'Stock', icon: <StoreIcon />, path: '/stock' }, // Updated icon for Stock
   // Add other menu items here
@@ -210,6 +213,8 @@ export default function MiniDrawer() {
           <Route path="/purchase" element={<Purchase/>} />
           <Route path="/sale" element={<Sale/>} />
           <Route path="/stock" element={<Stock/>} />
+          <Route path="/supplier" element={<Supplier/>} />
+          <Route path="/supplier-detail/:id" element={<SupplierDetail/>} />
           {/* Add other routes here */}
         </Routes>
       </Main>

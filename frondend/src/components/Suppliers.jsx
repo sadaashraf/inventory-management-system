@@ -6,78 +6,22 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-} from "@ant-design/icons";
+  EyeOutlined,
+} from "@ant-design/icons"; //
 import axios from "axios";
-import moment from "moment";
-import PurchaseForm from "./PurchaseForm";
+import SupplierForm from "./SupplierForm";
 import { useSuppliers } from "../context/supplierContext";
+import { useNavigate } from "react-router-dom";
 
-const Purchase = () => {
+const Supplier = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
-  const [dataSource, setDataSource] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const Navigate =useNavigate()
 
-  const { suppliers } = useSuppliers();
-
-  useEffect(() => {
-    fetchPurchases();
-  }, []);
-
-  const fetchPurchases = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get("http://localhost:8000/api/purchases");
-      setDataSource(response.data);
-    } catch (error) {
-      message.error("Error fetching purchases");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addPurchase = async (purchaseData) => {
-    // console.log('purchaseData', purchaseData)
-    const supplierId=suppliers.find(item=>item.shopName===purchaseData.supplier)._id
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/api/purchases/${supplierId}`,
-        purchaseData
-      );
-      setDataSource((prevData) => [...prevData, response.data]);
-      message.success("Purchase added successfully");
-    } catch (error) {
-      message.error("Error adding purchase");
-    }
-  };
-
-  const updatePurchase = async (id, purchaseData) => {
-    try {
-      const response = await axios.put(
-        `http://localhost:8000/api/purchases/${id}`,
-        purchaseData
-      );
-      setDataSource((prevData) =>
-        prevData.map((item) => (item._id === id ? response.data : item))
-      );
-      message.success("Purchase updated successfully");
-    } catch (error) {
-      message.error("Error updating purchase");
-    }
-  };
-
-  const deletePurchase = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/purchases/${id}/{}`);
-      setDataSource((prevData) => prevData.filter((item) => item._id !== id));
-      message.success("Purchase deleted successfully");
-    } catch (error) {
-      message.error("Error deleting purchase");
-    }
-  };
-
+  const { suppliers, updateSupplier, deleteSupplier, addSupplier } = useSuppliers();
+  console.log('suppliers', suppliers)
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -155,19 +99,20 @@ const Purchase = () => {
   };
 
   const handleEdit = (record) => {
+    console.log('record', record)
     setEditingItem(record);
     setIsModalOpen(true);
   };
 
   const handleDelete = (id) => {
-    deletePurchase(id);
+    deleteSupplier(id);
   };
 
   const handleOk = (values) => {
     if (editingItem) {
-      updatePurchase(editingItem._id, values);
+      updateSupplier(editingItem._id, values);
     } else {
-      addPurchase(values);
+      addSupplier(values);
     }
     setIsModalOpen(false);
   };
@@ -178,45 +123,27 @@ const Purchase = () => {
 
   const columns = [
     {
-      title: "Purchase Date",
-      dataIndex: "purchaseDate",
-      key: "purchaseDate",
-      sorter: (a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate),
-      render: (date) => moment(date).format("YYYY-MM-DD"),
+      title: "Shop Name",
+      dataIndex: "shopName",
+      key: "shopName",
+      ...getColumnSearchProps("shopName"),
     },
     {
-      title: "Item Name",
-      dataIndex: "itemName",
-      key: "itemName",
-      ...getColumnSearchProps("itemName"),
+      title: "Supplier Name",
+      dataIndex: "name",
+      key: "name",
+      ...getColumnSearchProps("name"),
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-      sorter: (a, b) => a.quantity - b.quantity,
-      render: (text, record) => (
-        <span>
-          {text} {record.unit}
-        </span>
-      ),
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+      ...getColumnSearchProps("address"),
     },
     {
-      title: "Unit Price",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-      sorter: (a, b) => a.unitPrice - b.unitPrice,
-    },
-    {
-      title: "Total Price",
-      key: "totalPrice",
-      render: (text, record) => record.quantity * record.unitPrice,
-    },
-    {
-      title: "Supplier",
-      dataIndex: "supplier",
-      key: "supplier",
-      ...getColumnSearchProps("supplier"),
+      title: "Phone Number",
+      dataIndex: "phoneNo",
+      key: "phoneNo",
     },
 
     {
@@ -235,56 +162,43 @@ const Purchase = () => {
             danger
             onClick={() => handleDelete(record._id)}
           />
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => {Navigate(`/supplier-detail/${record._id}`)}}
+          />
         </Space>
       ),
     },
   ];
 
-  const calculateTotalPurchase = () => {
-    return dataSource.reduce(
-      (total, item) => total + item.quantity * item.unitPrice,
-      0
-    );
-  };
-
   return (
     <div>
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Add Purchase
+          Add Supplier
         </Button>
       </Space>
       <Table
         columns={columns}
-        dataSource={dataSource}
+        dataSource={suppliers}
         rowKey={(record) => record._id}
-        pagination={false}
-        loading={loading}
-        summary={() => (
-          <Table.Summary.Row>
-            <Table.Summary.Cell index={0} colSpan={5} />
-            <Table.Summary.Cell index={1}>Total Purchase</Table.Summary.Cell>
-            <Table.Summary.Cell index={2} colSpan={1}>
-              <strong>{calculateTotalPurchase()}</strong>
-            </Table.Summary.Cell>
-          </Table.Summary.Row>
-        )}
+        pagination={true}
       />
 
       <Modal
-        title={editingItem ? "Edit Purchase" : "Add Purchase"}
+        title={editingItem ? "Edit Supplier" : "Add Supplier"}
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
       >
-        <PurchaseForm
+        <SupplierForm
           initialValues={
             editingItem || {
-              itemName: "",
-              quantity: "",
-              unitPrice: "",
-              suppliers: "",
-              purchaseDate: "",
+              name: "",
+              address: "",
+              phoneNo: "",
+              shopName: "",
             }
           }
           onFinish={handleOk}
@@ -295,4 +209,4 @@ const Purchase = () => {
   );
 };
 
-export default Purchase;
+export default Supplier;
