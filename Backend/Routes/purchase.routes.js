@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 // Create a new purchase
-router.post("/", createPurchase);
+router.post("/:supplierId", createPurchase);
 
 // Get all purchases
 router.get("/", getPurchases);
@@ -18,6 +18,6 @@ router.get("/", getPurchases);
 router.put("/:id", updatePurchase);
 
 // Delete a purchase
-router.delete("/:id", deletePurchase);
+router.delete("/:id/:supplierId", deletePurchase);
 
 export default router;

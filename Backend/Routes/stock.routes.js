@@ -1,10 +1,12 @@
 import express from 'express';
-import { getStock, getPurchases, getSales } from '../Controller/stock.controller.js';
+import { getStock, getAllStocks } from '../Controller/stock.controller.js';
 
 const router = express.Router();
 
-router.get('/stock', getStock);
-router.get('/purchases', getPurchases);
-router.get('/sales', getSales);
+// Route to get stock by item name
+router.get("/", getStock);
+
+// Route to get all stock items
+router.get("/all", getAllStocks);
 
 export default router;

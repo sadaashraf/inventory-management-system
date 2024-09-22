@@ -1,9 +1,18 @@
 import Purchase from "../Models/Purchase.js";
+import Supplier from "../Models/Supplier.js";
 
 export const createPurchase = async (req, res) => {
+  const { supplierId } = req.params;
   const newPurchase = new Purchase(req.body);
   try {
     const savedPurchase = await newPurchase.save();
+    try {
+      await Supplier.findByIdAndUpdate(supplierId, {
+        $push: { order: savedPurchase },
+      });
+    } catch (error) {
+      res.status(500).json("Internal server error", error);
+    }
     res.status(201).json(savedPurchase);
   } catch (err) {
     res.status(500).json(err);
@@ -33,8 +42,16 @@ export const updatePurchase = async (req, res) => {
 };
 
 export const deletePurchase = async (req, res) => {
+  const { supplierId } = req.params;
   try {
     await Purchase.findByIdAndDelete(req.params.id);
+    try {
+      await Supplier.findByIdAndUpdate(supplierId, {
+        $pull: { order: req.params.id },
+      });
+    } catch (error) {
+      res.status(500).json("Internal server error", error);
+    }
     res.status(200).json("Purchase has been deleted.");
   } catch (err) {
     res.status(500).json(err);

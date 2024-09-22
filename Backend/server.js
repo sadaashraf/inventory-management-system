@@ -6,7 +6,8 @@ import cookieParser from "cookie-parser";
 
 import purchaseRoute from "./Routes/purchase.routes.js";
 import saleRoutes from "./Routes/sale.routes.js";
-// import stockRoutes from "./Routes/stock.routes.js";
+import stockRoutes from "./Routes/stock.routes.js";
+import supplierRoutes from './Routes/supplier.routes.js'
 const app = express();
 
 dotenv.config();
@@ -56,7 +57,9 @@ app.use((err, req, res, next) => {
 
 app.use("/api/purchases", purchaseRoute);
 app.use('/api/sales', saleRoutes);
-// app.use('/api/stock', stockRoutes);
+app.use('/api/stock', stockRoutes);
+app.use('/api/suppliers', supplierRoutes);
+
 
 app.listen(port, () => {
   DatabaseConnection();
