@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
-
-const saleSchema = new mongoose.Schema({
+// Define the item schema
+const itemSchema = new mongoose.Schema({
   itemName: {
     type: String,
     required: true,
+    trim: true,
   },
   quantity: {
     type: Number,
@@ -17,16 +18,34 @@ const saleSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  customer: {
-    type: String,
+  total: {
+    type: Number,
     required: true,
+    default: 0,
   },
-  saleDate: {
-    type: Date,
-    required: true,
-  }
 });
 
-export default mongoose.model('Sale', saleSchema);
+// Define the main schema for the department issue
+const departmentIssueSchema = new mongoose.Schema({
+  department: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  issueDate: {
+    type: Date,
+    required: true,
+    default: Date.now,
+  },
+  items: [itemSchema], // Array of itemSchema
+  total: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+});
 
+// Create the model
+const Issue = mongoose.model('Issue', departmentIssueSchema);
 
+export default Issue;

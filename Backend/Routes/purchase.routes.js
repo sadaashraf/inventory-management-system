@@ -1,9 +1,10 @@
 import express from "express";
-import { 
-  createPurchase, 
-  getPurchases, 
-  updatePurchase, 
-  deletePurchase 
+import {
+  createPurchase,
+  getPurchases,
+  updatePurchase,
+  deletePurchase,
+  getPurchase,
 } from "../Controller/purchase.controller.js";
 
 const router = express.Router();
@@ -13,6 +14,7 @@ router.post("/:supplierId", createPurchase);
 
 // Get all purchases
 router.get("/", getPurchases);
+router.get("/:id", getPurchase);
 
 // Update a purchase
 router.put("/:id", updatePurchase);

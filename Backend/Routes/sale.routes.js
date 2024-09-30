@@ -3,7 +3,8 @@ import {
   createSale, 
   getSales, 
   updateSale, 
-  deleteSale 
+  deleteSale, 
+  getSale
 } from "../Controller/sale.controlller.js";
 
 const router = express.Router();
@@ -13,6 +14,8 @@ router.post("/", createSale);
 
 // Get all sales
 router.get("/", getSales);
+
+router.get("/:id", getSale);
 
 // Update a sale
 router.put("/:id", updateSale);

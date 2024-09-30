@@ -8,11 +8,13 @@ import purchaseRoute from "./Routes/purchase.routes.js";
 import saleRoutes from "./Routes/sale.routes.js";
 import stockRoutes from "./Routes/stock.routes.js";
 import supplierRoutes from './Routes/supplier.routes.js'
+
+import departmentRoutes from './Routes/department.routes.js'
 const app = express();
 
 dotenv.config();
 
-// MiddleWers
+// MiddleWerss
 const corsOptions = {
   credentials: true,
   origin: "http://localhost:5173",
@@ -59,6 +61,8 @@ app.use("/api/purchases", purchaseRoute);
 app.use('/api/sales', saleRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/suppliers', supplierRoutes);
+
+app.use('/api/department', departmentRoutes);
 
 
 app.listen(port, () => {
