@@ -18,16 +18,21 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'; // New icon for Sale
 import StoreIcon from '@mui/icons-material/Store'; // New icon for Stock
-import Sale from './components/Sale';
-import Purchase from './components/Purchase';
-import Stock from './components/Stock';
-import Supplier from './components/Suppliers';
+import Purchase from './components/Purchase/Purchase';
+import Stock from './components/Stock/Stock';
+import Supplier from './components/Supplier/Suppliers';
 import { GlobalStyles } from '@mui/material';
-import SupplierDetail from './components/SupplierDetail';
-
+import SupplierDetail from './components/Supplier/SupplierDetail';
+import Issue from './components/Issue/Issue';
+import Dashboard from './components/Stock/Dashboard';
+import './App.css'
+import PurchaseDetail from './components/Purchase/PurchaseDetail';
+import Departments from './components/Department/departments';
+import DepartmentDetail from './components/Department/departmentDetail';
+import IssueDetail from './components/Issue/IssueDetail';
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -98,7 +103,6 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-// Define the Main component here
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
     flexGrow: 1,
@@ -119,12 +123,14 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
 );
 
 const menuItems = [
-  { title: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+  { title: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { title: 'Purchase', icon: <InventoryIcon />, path: '/purchase' },
   { title: 'Supplier', icon: <InventoryIcon />, path: '/supplier' },
-  { title: 'Sale', icon: <MonetizationOnIcon />, path: '/sale' }, // Updated icon for Sale
-  { title: 'Stock', icon: <StoreIcon />, path: '/stock' }, // Updated icon for Stock
-  // Add other menu items here
+
+  { title: 'Department', icon: <InventoryIcon />, path: '/departments' },
+  
+  { title: 'Issue', icon: <MonetizationOnIcon />, path: '/issue' },
+  { title: 'Stock', icon: <StoreIcon />, path: '/stock' },
 ];
 
 export default function MiniDrawer() {
@@ -147,78 +153,84 @@ export default function MiniDrawer() {
 
   return (
     <Router>
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{
-              marginRight: 5,
-              ...(open && { display: 'none' }),
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Inventory Management System
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose} sx={{ color: '#fff' }}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        </DrawerHeader>
-        <Divider sx={{ backgroundColor: '#fff' }} />
-        <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.title} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? 'initial' : 'center',
-                  px: 2.5,
-                  '&:hover': {
-                    backgroundColor: '#444',
-                  },
-                }}
-                onClick={() => handleMenuItemClick(item.path)}
-                component="a"
-                href={item.path}
-              >
-                <ListItemIcon
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar position="fixed" open={open}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              sx={{
+                marginRight: 5,
+                ...(open && { display: 'none' }),
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div">
+              Inventory Management System
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Drawer variant="permanent" open={open}>
+          <DrawerHeader>
+            <IconButton onClick={handleDrawerClose} sx={{ color: '#fff' }}>
+              {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </IconButton>
+          </DrawerHeader>
+          <Divider sx={{ backgroundColor: '#fff' }} />
+          <List>
+            {menuItems.map((item) => (
+              <ListItem key={item.title} disablePadding sx={{ display: 'block' }}>
+                <ListItemButton
                   sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : 'auto',
-                    justifyContent: 'center',
-                    color: '#fff',
+                    minHeight: 48,
+                    justifyContent: open ? 'initial' : 'center',
+                    px: 2.5,
+                    '&:hover': {
+                      backgroundColor: '#444',
+                    },
                   }}
+                  onClick={() => handleMenuItemClick(item.path)}
+                  component={Link}
+                  to={item.path}  // Changed to 'Link' and 'to'
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.title} sx={{ opacity: open ? 1 : 0, color: '#fff' }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-      <Main open={open}>
-        <DrawerHeader />
-        <Routes>
-          <Route path="/purchase" element={<Purchase/>} />
-          <Route path="/sale" element={<Sale/>} />
-          <Route path="/stock" element={<Stock/>} />
-          <Route path="/supplier" element={<Supplier/>} />
-          <Route path="/supplier-detail/:id" element={<SupplierDetail/>} />
-          {/* Add other routes here */}
-        </Routes>
-      </Main>
-    </Box>
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : 'auto',
+                      justifyContent: 'center',
+                      color: '#fff',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.title} sx={{ opacity: open ? 1 : 0, color: '#fff' }} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Drawer>
+        <Main open={open}>
+          <DrawerHeader />
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/purchase" element={<Purchase />} />
+            <Route path="/purchase-detail/:id" element={<PurchaseDetail />} />
+            <Route path="/issue" element={<Issue />} />
+            <Route path="/issue-detail/:id" element={<IssueDetail />} />
+            <Route path="/stock" element={<Stock />} />
+            <Route path="/supplier" element={<Supplier />} />
+            <Route path="/supplier-detail/:id" element={<SupplierDetail />} />
+
+            <Route path="/departments" element={<Departments />} /> 
+            <Route path="/department-detail/:id" element={<DepartmentDetail />} />
+          </Routes>
+        </Main>
+      </Box>
     </Router>
   );
 }

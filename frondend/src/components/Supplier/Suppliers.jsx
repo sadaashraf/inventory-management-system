@@ -10,7 +10,7 @@ import {
 } from "@ant-design/icons"; //
 import axios from "axios";
 import SupplierForm from "./SupplierForm";
-import { useSuppliers } from "../context/supplierContext";
+import { useSuppliers } from "../../context/supplierContext";
 import { useNavigate } from "react-router-dom";
 
 const Supplier = () => {
@@ -21,7 +21,7 @@ const Supplier = () => {
   const Navigate =useNavigate()
 
   const { suppliers, updateSupplier, deleteSupplier, addSupplier } = useSuppliers();
-  console.log('suppliers', suppliers)
+  // console.log('suppliers', suppliers)
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -99,7 +99,6 @@ const Supplier = () => {
   };
 
   const handleEdit = (record) => {
-    console.log('record', record)
     setEditingItem(record);
     setIsModalOpen(true);
   };

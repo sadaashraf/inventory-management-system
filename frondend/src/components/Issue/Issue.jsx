@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Input, Button, Space, Modal, message } from "antd";
 import Highlighter from "react-highlight-words";
 import {
@@ -6,75 +6,83 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-} from "@ant-design/icons";
+  EyeOutlined,
+} from "@ant-design/icons"; // Keeping only relevant icon imports
 import axios from "axios";
 import moment from "moment";
-import PurchaseForm from "./PurchaseForm";
-import { useSuppliers } from "../context/supplierContext";
 
-const Purchase = () => {
+import IssueForm from "./IssueForm"; // Assuming you have an IssueForm component
+import { useDepartments } from "../Department/departmentsContext";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
+const Issue = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [dataSource, setDataSource] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const { suppliers } = useSuppliers();
+  const Navigate = useNavigate();
 
   useEffect(() => {
-    fetchPurchases();
+    fetchIssues(); // Fetching issues instead of sales
   }, []);
 
-  const fetchPurchases = async () => {
+  const fetchIssues = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8000/api/purchases");
+      const response = await axios.get("http://localhost:8000/api/sales"); // Assuming 'issues' endpoint
+      console.log("response", response.data);
       setDataSource(response.data);
     } catch (error) {
-      message.error("Error fetching purchases");
+      message.error("Error fetching issues");
     } finally {
       setLoading(false);
     }
   };
 
-  const addPurchase = async (purchaseData) => {
-    // console.log('purchaseData', purchaseData)
-    const supplierId=suppliers.find(item=>item.shopName===purchaseData.supplier)._id
+  const addIssue = async (issueData) => {
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/purchases/${supplierId}`,
-        purchaseData
+        "http://localhost:8000/api/sales", // Assuming 'issues' endpoint for adding
+        issueData
       );
       setDataSource((prevData) => [...prevData, response.data]);
-      message.success("Purchase added successfully");
+      message.success("Issue added successfully");
     } catch (error) {
-      message.error("Error adding purchase");
+      message.error("Error adding issue");
     }
   };
 
-  const updatePurchase = async (id, purchaseData) => {
+  const updateIssue = async (id, issueData) => {
     try {
       const response = await axios.put(
-        `http://localhost:8000/api/purchases/${id}`,
-        purchaseData
+        `http://localhost:8000/api/sales/${id}`, // Assuming 'issues' endpoint for updating
+        issueData
       );
       setDataSource((prevData) =>
         prevData.map((item) => (item._id === id ? response.data : item))
       );
-      message.success("Purchase updated successfully");
+      message.success("Issue updated successfully");
     } catch (error) {
-      message.error("Error updating purchase");
+      message.error("Error updating issue");
     }
   };
 
-  const deletePurchase = async (id) => {
+  const deleteIssue = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/purchases/${id}/{}`);
+      await axios.delete(`http://localhost:8000/api/sales/${id}`); // Assuming 'issues' endpoint for deletion
       setDataSource((prevData) => prevData.filter((item) => item._id !== id));
-      message.success("Purchase deleted successfully");
+      message.success("Issue deleted successfully");
     } catch (error) {
-      message.error("Error deleting purchase");
+      message.error("Error deleting issue");
     }
   };
 
@@ -158,16 +166,19 @@ const Purchase = () => {
     setEditingItem(record);
     setIsModalOpen(true);
   };
+  const handleView = (record) => {
+    Navigate(`/issue-detail/${record._id}`);
+  };
 
   const handleDelete = (id) => {
-    deletePurchase(id);
+    deleteIssue(id);
   };
 
   const handleOk = (values) => {
     if (editingItem) {
-      updatePurchase(editingItem._id, values);
+      updateIssue(editingItem._id, values);
     } else {
-      addPurchase(values);
+      addIssue(values);
     }
     setIsModalOpen(false);
   };
@@ -178,80 +189,45 @@ const Purchase = () => {
 
   const columns = [
     {
-      title: "Purchase Date",
-      dataIndex: "purchaseDate",
-      key: "purchaseDate",
-      sorter: (a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate),
+      title: "Department",
+      dataIndex: "department",
+      ...getColumnSearchProps("department"), // Search feature for department
+    },
+    {
+      title: "Issue Date",
+      dataIndex: "issueDate",
+      key: "issueDate",
+      sorter: (a, b) => new Date(a.issueDate) - new Date(b.issueDate),
       render: (date) => moment(date).format("YYYY-MM-DD"),
     },
     {
-      title: "Item Name",
-      dataIndex: "itemName",
-      key: "itemName",
-      ...getColumnSearchProps("itemName"),
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-      sorter: (a, b) => a.quantity - b.quantity,
-      render: (text, record) => (
-        <span>
-          {text} {record.unit}
-        </span>
-      ),
-    },
-    {
-      title: "Unit Price",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-      sorter: (a, b) => a.unitPrice - b.unitPrice,
-    },
-    {
       title: "Total Price",
-      key: "totalPrice",
-      render: (text, record) => record.quantity * record.unitPrice,
+      dataIndex: "total",
+      key: "total",
     },
-    {
-      title: "Supplier",
-      dataIndex: "supplier",
-      key: "supplier",
-      ...getColumnSearchProps("supplier"),
-    },
-
     {
       title: "Actions",
-      key: "actions",
       render: (text, record) => (
         <Space size="middle">
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="link"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => handleDelete(record._id)}
-          />
+          <IconButton color="secondary" onClick={() => handleEdit(record)}>
+            <EditOutlined />
+          </IconButton>
+          <IconButton color="primary" onClick={() => handleView(record)}>
+            <EyeOutlined />
+          </IconButton>
+          <IconButton onClick={() => handleDelete(record._id)} color="error">
+            <DeleteOutlined />
+          </IconButton>
         </Space>
       ),
     },
   ];
 
-  const calculateTotalPurchase = () => {
-    return dataSource.reduce(
-      (total, item) => total + item.quantity * item.unitPrice,
-      0
-    );
-  };
-
   return (
     <div>
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Add Purchase
+          Add Issue
         </Button>
       </Space>
       <Table
@@ -260,39 +236,40 @@ const Purchase = () => {
         rowKey={(record) => record._id}
         pagination={false}
         loading={loading}
-        summary={() => (
-          <Table.Summary.Row>
-            <Table.Summary.Cell index={0} colSpan={5} />
-            <Table.Summary.Cell index={1}>Total Purchase</Table.Summary.Cell>
-            <Table.Summary.Cell index={2} colSpan={1}>
-              <strong>{calculateTotalPurchase()}</strong>
-            </Table.Summary.Cell>
-          </Table.Summary.Row>
-        )}
       />
-
-      <Modal
-        title={editingItem ? "Edit Purchase" : "Add Purchase"}
+      <Dialog
+        fullWidth={true}
+        maxWidth={"md"}
         open={isModalOpen}
-        onCancel={handleCancel}
-        footer={null}
+        onClose={handleCancel}
       >
-        <PurchaseForm
-          initialValues={
-            editingItem || {
-              itemName: "",
-              quantity: "",
-              unitPrice: "",
-              suppliers: "",
-              purchaseDate: "",
+        <DialogTitle>{editingItem ? "Edit Issue" : "Add Issue"}</DialogTitle>
+        <DialogContent>
+          <IssueForm
+            editingItem={editingItem}
+            initialValues={
+              editingItem || {
+                items: [
+                  {
+                    itemName: "",
+                    quantity: "",
+                    unit: "",
+                    unitPrice: "",
+                    total: 0,
+                  },
+                ],
+                department: "",
+                issueDate: "",
+                total: 0,
+              }
             }
-          }
-          onFinish={handleOk}
-          onCancel={handleCancel}
-        />
-      </Modal>
+            onFinish={handleOk}
+            onCancel={handleCancel}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
-export default Purchase;
+export default Issue;
