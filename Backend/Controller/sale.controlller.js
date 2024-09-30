@@ -1,13 +1,24 @@
+import Department from "../Models/Department.js";
 import Issue from "../Models/Sale.js";
 
 // Create a new sale
 export const createSale = async (req, res) => {
+  const { deptId } = req.params;
   try {
     const sale = new Issue(req.body);
     const savedSale = await sale.save();
+    try {
+      sale.items.map(async (item) => {
+        await Department.findByIdAndUpdate(deptId, {
+          $push: { issuedItems: item },
+        });
+      });
+    } catch (error) {
+      res.status(500).json("Internal server error", error);
+    }
     res.status(201).json(savedSale);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error });
   }
 };
 
@@ -17,7 +28,9 @@ export const getSales = async (req, res) => {
     const sales = await Issue.find();
     res.status(200).json(sales);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching issues: " + error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching issues: " + error.message });
   }
 };
 
@@ -27,7 +40,9 @@ export const getSale = async (req, res) => {
     const sale = await Issue.findById(req.params.id);
     res.status(200).json(sale);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching issues: " + error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching issues: " + error.message });
   }
 };
 
@@ -50,13 +65,22 @@ export const updateSale = async (req, res) => {
 
 // Delete a sale
 export const deleteSale = async (req, res) => {
+  const { deptId } = req.params;
   try {
     const sale = await Issue.findByIdAndDelete(req.params.id);
 
     if (!sale) {
       return res.status(404).json({ message: "Issue not found" });
     }
-
+    try {
+      sale.items.map(async (item) => {
+        await Department.findByIdAndUpdate(deptId, {
+          $pull: { issuedItems: item },
+        });
+      });
+    } catch (error) {
+      res.status(500).json("Internal server error", error);
+    }
     res.status(200).json({ message: "Issue deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting Issue: " + error.message });
