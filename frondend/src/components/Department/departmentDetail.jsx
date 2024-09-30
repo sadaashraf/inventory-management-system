@@ -19,7 +19,7 @@ const DepartmentDetail = () => {
   const { departments } = useDepartments(); // Use the department context instead of suppliers
   const { id } = useParams();
   const department = departments.find((item) => item._id === id); // Use department instead of supplier
-
+  console.log("department", department);
   const calculateTotal = (unitPrice, quantity) => unitPrice * quantity;
 
   const handleEdit = (product) => {
@@ -65,24 +65,20 @@ const DepartmentDetail = () => {
               <TableRow style={{ backgroundColor: "#009ddc" }}>
                 <TableCell style={{ color: "#fff" }}>No</TableCell>
                 <TableCell style={{ color: "#fff" }}>Product</TableCell>
-                <TableCell style={{ color: "#fff" }}>Unit</TableCell>
-                <TableCell style={{ color: "#fff" }}>Price</TableCell>
                 <TableCell style={{ color: "#fff" }}>Quantity</TableCell>
+                <TableCell style={{ color: "#fff" }}>Unit Price</TableCell>
                 <TableCell style={{ color: "#fff" }}>Total</TableCell>
                 <TableCell style={{ color: "#fff" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {department.order.map((product, index) => (
-                <TableRow key={product.id}>
+              {department.issuedItems.map((product, index) => (
+                <TableRow key={product._id}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{product.itemName}</TableCell>
-                  <TableCell>{product.unit}</TableCell>
+                  <TableCell>{`${product.quantity} ${product.unit}`}</TableCell>
                   <TableCell>{product.unitPrice}</TableCell>
-                  <TableCell>{product.quantity}</TableCell>
-                  <TableCell>
-                    {calculateTotal(product.unitPrice, product.quantity)}
-                  </TableCell>
+                  <TableCell>{product.total}</TableCell>
                   <TableCell>
                     <IconButton
                       onClick={() => handleEdit(product)}

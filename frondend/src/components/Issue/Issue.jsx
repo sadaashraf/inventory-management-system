@@ -30,7 +30,7 @@ const Issue = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const Navigate = useNavigate();
-
+  const { departments, } = useDepartments();
   useEffect(() => {
     fetchIssues(); // Fetching issues instead of sales
   }, []);
@@ -49,15 +49,19 @@ const Issue = () => {
   };
 
   const addIssue = async (issueData) => {
+    
+    const deptId = departments.find((dept) => dept.name === issueData.department)._id;
+
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/sales", // Assuming 'issues' endpoint for adding
+        `http://localhost:8000/api/sales/${deptId}`, // Assuming 'issues' endpoint for adding
         issueData
       );
       setDataSource((prevData) => [...prevData, response.data]);
       message.success("Issue added successfully");
     } catch (error) {
       message.error("Error adding issue");
+      console.log('error', error)
     }
   };
 
@@ -76,10 +80,12 @@ const Issue = () => {
     }
   };
 
-  const deleteIssue = async (id) => {
+  const deleteIssue = async (props) => {
+    const { _id, department } = props;
+    const deptId = departments.find((dept) => dept.name === department)._id;
     try {
-      await axios.delete(`http://localhost:8000/api/sales/${id}`); // Assuming 'issues' endpoint for deletion
-      setDataSource((prevData) => prevData.filter((item) => item._id !== id));
+      await axios.delete(`http://localhost:8000/api/sales/${_id}/${deptId}`); // Assuming 'issues' endpoint for deletion
+      setDataSource((prevData) => prevData.filter((item) => item._id !== _id));
       message.success("Issue deleted successfully");
     } catch (error) {
       message.error("Error deleting issue");
@@ -170,8 +176,8 @@ const Issue = () => {
     Navigate(`/issue-detail/${record._id}`);
   };
 
-  const handleDelete = (id) => {
-    deleteIssue(id);
+  const handleDelete = (item) => {
+    deleteIssue(item);
   };
 
   const handleOk = (values) => {
@@ -215,7 +221,7 @@ const Issue = () => {
           <IconButton color="primary" onClick={() => handleView(record)}>
             <EyeOutlined />
           </IconButton>
-          <IconButton onClick={() => handleDelete(record._id)} color="error">
+          <IconButton onClick={() => handleDelete(record)} color="error">
             <DeleteOutlined />
           </IconButton>
         </Space>

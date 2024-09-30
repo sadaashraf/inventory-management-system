@@ -65,9 +65,8 @@ const IssueDetail = () => {
               <TableRow style={{ backgroundColor: "#009ddc" }}>
                 <TableCell style={{ color: "#fff" }}>No</TableCell>
                 <TableCell style={{ color: "#fff" }}>Product</TableCell>
-                <TableCell style={{ color: "#fff" }}>Unit</TableCell>
-                <TableCell style={{ color: "#fff" }}>Price</TableCell>
                 <TableCell style={{ color: "#fff" }}>Quantity</TableCell>
+                <TableCell style={{ color: "#fff" }}>Unit Price</TableCell>
                 <TableCell style={{ color: "#fff" }}>Total</TableCell>
                 {/* <TableCell style={{ color: "#fff" }}>Actions</TableCell> */}
               </TableRow>
@@ -77,9 +76,8 @@ const IssueDetail = () => {
                 <TableRow key={item._id}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{item.itemName}</TableCell>
-                  <TableCell>{item.unit}</TableCell>
+                  <TableCell>{`${item.quantity} ${item.unit}`}</TableCell>
                   <TableCell>{item.unitPrice}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.total}</TableCell>
                 </TableRow>
               ))}
