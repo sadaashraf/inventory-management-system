@@ -1,24 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Table, Input, Button, Space, Modal, message } from "antd";
 import Highlighter from "react-highlight-words";
-import {
-  SearchOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
+import {SearchOutlined, PlusOutlined, EditOutlined,DeleteOutlined,EyeOutlined,
 } from "@ant-design/icons"; // Keeping only relevant icon imports
 import axios from "axios";
 import moment from "moment";
-
+import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
+import ModeIcon from '@mui/icons-material/Mode';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import IssueForm from "./IssueForm"; // Assuming you have an IssueForm component
 import { useDepartments } from "../Department/departmentsContext";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
+import { Dialog, DialogContent,DialogTitle,IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -214,15 +206,15 @@ const Issue = () => {
     {
       title: "Actions",
       render: (text, record) => (
-        <Space size="middle">
+        <Space size="left">
           <IconButton color="secondary" onClick={() => handleEdit(record)}>
-            <EditOutlined />
+            <ModeIcon />
           </IconButton>
           <IconButton color="primary" onClick={() => handleView(record)}>
-            <EyeOutlined />
+            <VisibilityIcon />
           </IconButton>
           <IconButton onClick={() => handleDelete(record)} color="error">
-            <DeleteOutlined />
+            <DeleteSharpIcon />
           </IconButton>
         </Space>
       ),

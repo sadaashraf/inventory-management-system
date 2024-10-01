@@ -1,4 +1,3 @@
-// Stock.jsx
 import React, { useState, useEffect } from "react";
 import { notification } from "antd";
 import axios from "axios";
@@ -32,36 +31,43 @@ const Dashboard = () => {
 
   const calculateStock = (purchaseData, saleData) => {
     const updatedStock = [];
+
+    // Process purchase data
     purchaseData.forEach(purchase => {
-      const existingItem = updatedStock.find(item => item.itemName === purchase.itemName);
-      if (existingItem) {
-        existingItem.purchaseQuantity += purchase.quantity;
-        existingItem.availableQuantity += purchase.quantity;
-      } else {
-        updatedStock.push({
-          itemName: purchase.itemName,
-          purchaseQuantity: purchase.quantity,
-          saleQuantity: 0,
-          availableQuantity: purchase.quantity,
-          unit: purchase.unit || '',
-        });
-      }
+      purchase.items.forEach(item => {
+        const existingItem = updatedStock.find(stockItem => stockItem.itemName === item.itemName);
+        if (existingItem) {
+          existingItem.purchaseQuantity += item.quantity;
+          existingItem.availableQuantity += item.quantity;
+        } else {
+          updatedStock.push({
+            itemName: item.itemName,
+            purchaseQuantity: item.quantity,
+            saleQuantity: 0,
+            availableQuantity: item.quantity,
+            unit: item.unit || '',
+          });
+        }
+      });
     });
 
+    // Process sale data
     saleData.forEach(sale => {
-      const existingItem = updatedStock.find(item => item.itemName === sale.itemName);
-      if (existingItem) {
-        existingItem.saleQuantity += sale.quantity;
-        existingItem.availableQuantity = Math.max(0, existingItem.availableQuantity - sale.quantity);
-      } else {
-        updatedStock.push({
-          itemName: sale.itemName,
-          purchaseQuantity: 0,
-          saleQuantity: sale.quantity,
-          availableQuantity: Math.max(0, -sale.quantity),
-          unit: sale.unit || '',
-        });
-      }
+      sale.items.forEach(item => {
+        const existingItem = updatedStock.find(stockItem => stockItem.itemName === item.itemName);
+        if (existingItem) {
+          existingItem.saleQuantity += item.quantity;
+          existingItem.availableQuantity = Math.max(0, existingItem.availableQuantity - item.quantity);
+        } else {
+          updatedStock.push({
+            itemName: item.itemName,
+            purchaseQuantity: 0,
+            saleQuantity: item.quantity,
+            availableQuantity: Math.max(0, -item.quantity),
+            unit: item.unit || '',
+          });
+        }
+      });
     });
 
     return updatedStock;
@@ -69,7 +75,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <DashboardDetail stockData={stockData} />
+      <DashboardDetail stockData={stockData} loading={loading} />
     </div>
   );
 };

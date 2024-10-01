@@ -1,58 +1,62 @@
-import Stock from "../Models/Stock.js";
+import Stock from '../Models/Stock.js';
 
-// Fetch all stock items
-export const getAllStocks = async (req, res) => {
+// Create a new stock item
+export const createStock = async (req, res) => {
   try {
-    const stocks = await Stock.find({}, { itemName: 1, availableQuantity: 1 }); // Fetch only necessary fields
-    res.status(200).json(stocks);
+    const newStock = new Stock(req.body);
+    const savedStock = await newStock.save();
+    return res.status(201).json(savedStock);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching stock items', error: error.message });
+    return res.status(500).json({ message: 'Error creating stock', error });
   }
 };
 
-// Fetch stock for a specific item
-export const getStock = async (req, res) => {
-  const { itemName } = req.query;
-
-  if (!itemName) {
-    return res.status(400).json({ message: 'Item name is required' });
-  }
-
+// Get all stock items
+export const getAllStock = async (req, res) => {
   try {
-    const stock = await Stock.findOne({ itemName });
+    const stockItems = await Stock.find();
+    return res.status(200).json(stockItems);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error retrieving stock data', error });
+  }
+};
+
+// Get a stock item by ID
+export const getStockById = async (req, res) => {
+  try {
+    const stock = await Stock.findById(req.params.id);
     if (!stock) {
-      return res.status(404).json({ message: `Stock not found for item: ${itemName}` });
+      return res.status(404).json({ message: 'Stock not found' });
     }
-    res.status(200).json(stock);
+    return res.status(200).json(stock);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching stock item', error: error.message });
+    return res.status(500).json({ message: 'Error retrieving stock item', error });
   }
 };
 
-// Controller to handle restocking items
-export const restockItem = async (req, res) => {
-  const { id } = req.params;
-  const { quantity } = req.body;
-
-  if (!id) {
-    return res.status(400).json({ message: 'Item ID is required' });
-  }
-  
-  if (!quantity || quantity <= 0) {
-    return res.status(400).json({ message: 'Quantity must be greater than zero' });
-  }
-
+// Update a stock item
+export const updateStock = async (req, res) => {
   try {
-    const stockItem = await Stock.findById(id);
-    if (!stockItem) {
-      return res.status(404).json({ message: 'Item not found' });
+    const updatedStock = await Stock.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedStock) {
+      return res.status(404).json({ message: 'Stock not found' });
     }
-
-    stockItem.availableQuantity += quantity; // Restock by the specified quantity
-    await stockItem.save();
-
-    res.status(200).json({ message: 'Item restocked successfully', stockItem });
+    return res.status(200).json(updatedStock);
   } catch (error) {
-    res.status(500).json({ message: 'Error restocking item', error: error.message });
+    return res.status(500).json({ message: 'Error updating stock item', error });
   }
 };
+
+// Delete a stock item
+export const deleteStock = async (req, res) => {
+  try {
+    const deletedStock = await Stock.findByIdAndDelete(req.params.id);
+    if (!deletedStock) {
+      return res.status(404).json({ message: 'Stock not found' });
+    }
+    return res.status(200).json({ message: 'Stock deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error deleting stock item', error });
+  }
+};
+

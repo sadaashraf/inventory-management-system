@@ -3,6 +3,10 @@ import { Row, Col, Card, Statistic, Progress } from "antd";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const DashboardDetail = ({ stockData, loading }) => {
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   // Dashboard Summary Data
   const totalStock = stockData.reduce((sum, item) => sum + item.availableQuantity, 0);
   const lowStockItems = stockData.filter(item => item.availableQuantity < 10).length;
@@ -33,7 +37,7 @@ const DashboardDetail = ({ stockData, loading }) => {
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic title="Total Sales" value={totalSales} />
+            <Statistic title="Total Issue" value={totalSales} />
           </Card>
         </Col>
       </Row>

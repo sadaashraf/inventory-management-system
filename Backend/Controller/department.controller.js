@@ -32,7 +32,7 @@ export const getDepartmentById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const department = await Department.findById(id);
+    const department = await Department.findById(id).populate('issuedItems')
     if (!department) {
       return res.status(404).json({ message: "Department not found" });
     }

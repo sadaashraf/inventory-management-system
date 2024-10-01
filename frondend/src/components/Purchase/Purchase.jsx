@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Space, message } from "antd";
 import {
-  SearchOutlined,
   PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
 } from "@ant-design/icons";
+import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
+import ModeIcon from '@mui/icons-material/Mode';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from "axios";
 import moment from "moment";
 import BillingForm from "./BillingForm";
 import { useSuppliers } from "../../context/supplierContext";
 import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Dialog, DialogContent,  DialogTitle,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -77,9 +73,11 @@ const Purchase = () => {
   };
 
   const deletePurchase = async (purchaseData) => {
+    console.log('pu', purchaseData)
     const supplierId = suppliers.find(
       (item) => item.shopName === purchaseData.supplier
     )._id;
+    console.log('supplierId', supplierId)
     try {
       await axios.delete(
         `http://localhost:8000/api/purchases/${purchaseData._id}/${supplierId}`
@@ -106,11 +104,10 @@ const Purchase = () => {
     Navigate(`/purchase-detail/${record._id}`)
     console.log('record', record)
   };
-
+  
   const handleDelete = (id) => {
     deletePurchase(id);
-  };
-
+  }
   const handleOk = (values) => {
     if (editingItem) {
       updatePurchase(editingItem._id, values);
@@ -153,20 +150,20 @@ const Purchase = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="middle">
+        <Space size="left">
           <Button
             type="link"
-            icon={<EditOutlined />}
+            icon={<ModeIcon />}
             onClick={() => handleEdit(record)}
           />
           <Button
             type="link"
-            icon={<EyeOutlined />}
+            icon={<VisibilityIcon />}
             onClick={() => handleView(record)}
           />
           <Button
             type="link"
-            icon={<DeleteOutlined />}
+            icon={<DeleteSharpIcon />}
             danger
             onClick={() => handleDelete(record)}
           />
@@ -205,6 +202,7 @@ const Purchase = () => {
               editingItem || {
                 items: [
                   {
+                    purchaseDate:"",
                     itemName: "",
                     quantity: "",
                     unit: "",

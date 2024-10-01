@@ -8,7 +8,9 @@ import {
   DeleteOutlined,
   EyeOutlined,
 } from "@ant-design/icons"; //
-import axios from "axios";
+import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
+import ModeIcon from '@mui/icons-material/Mode';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import SupplierForm from "./SupplierForm";
 import { useSuppliers } from "../../context/supplierContext";
 import { useNavigate } from "react-router-dom";
@@ -149,21 +151,21 @@ const Supplier = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="middle">
+        <Space size="left">
           <Button
             type="link"
-            icon={<EditOutlined />}
+            icon={<ModeIcon />}
             onClick={() => handleEdit(record)}
           />
           <Button
             type="link"
-            icon={<DeleteOutlined />}
+            icon={<DeleteSharpIcon/>}
             danger
             onClick={() => handleDelete(record._id)}
           />
           <Button
             type="link"
-            icon={<EyeOutlined />}
+            icon={<VisibilityIcon />}
             onClick={() => {Navigate(`/supplier-detail/${record._id}`)}}
           />
         </Space>
@@ -208,4 +210,4 @@ const Supplier = () => {
   );
 };
 
-export default Supplier;
+export default Supplier;  

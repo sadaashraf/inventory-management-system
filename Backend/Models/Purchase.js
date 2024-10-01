@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
-
 const Schema = mongoose.Schema;
-
 // Create the schema for items
 const itemSchema = new Schema({
   itemName: {
@@ -25,7 +23,6 @@ const itemSchema = new Schema({
     required: true,
   },
 });
-
 // Create the schema for purchase
 const purchaseSchema = new Schema({
   supplier: {

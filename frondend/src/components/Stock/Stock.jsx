@@ -1,81 +1,123 @@
-
-// Stock.jsx
-import React, { useState, useEffect } from "react";
-import { notification } from "antd";
+import React, { useEffect, useState } from "react";
+import { Table, Button, Space, Modal, message } from "antd";
 import axios from "axios";
-import StockDetails from "./StockDetails";
+import StockForm from "./StockForm"; // Assuming StockForm is the form component
+import { useStocks } from "../../context/stocksContext";
+import moment from "moment";
+import { Delete, DeleteOutline, EditOutlined } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
 
 const Stock = () => {
-  const [searchText, setSearchText] = useState("");
-  const [stockData, setStockData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingStock, setEditingStock] = useState(null); // To track editing stock
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const purchasesResponse = await axios.get("http://localhost:8000/api/purchases");
-        const salesResponse = await axios.get("http://localhost:8000/api/sales");
-        setStockData(calculateStock(purchasesResponse.data, salesResponse.data));
-      } catch (error) {
-        notification.error({
-          message: "Error Loading Data",
-          description: "An error occurred while fetching stock data.",
-        });
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { stockData, loading, addStock, updateStock, deleteStock } =
+    useStocks();
 
-    fetchData();
-  }, []);
-
-  const calculateStock = (purchaseData, saleData) => {
-    const updatedStock = [];
-    purchaseData.forEach(purchase => {
-      const existingItem = updatedStock.find(item => item.itemName === purchase.itemName);
-      if (existingItem) {
-        existingItem.purchaseQuantity += purchase.quantity;
-        existingItem.availableQuantity += purchase.quantity;
+  // Handle form submission to add a new stock item
+  const handleAddStock = async (values) => {
+    try {
+      if (editingStock) {
+        // If editing, update the existing stock
+        updateStock(editingStock._id, values);
+        setIsModalVisible(false);
+        setEditingStock(null);
       } else {
-        updatedStock.push({
-          itemName: purchase.itemName,
-          purchaseQuantity: purchase.quantity,
-          saleQuantity: 0,
-          availableQuantity: purchase.quantity,
-          unit: purchase.unit || '',
-        });
-      }
-    });
+        // If not editing, create a new stock
+        const existingItem = stockData.find(
+          (item) => item.itemName === values.itemName
+        );
 
-    saleData.forEach(sale => {
-      const existingItem = updatedStock.find(item => item.itemName === sale.itemName);
-      if (existingItem) {
-        existingItem.saleQuantity += sale.quantity;
-        existingItem.availableQuantity = Math.max(0, existingItem.availableQuantity - sale.quantity);
-      } else {
-        updatedStock.push({
-          itemName: sale.itemName,
-          purchaseQuantity: 0,
-          saleQuantity: sale.quantity,
-          availableQuantity: Math.max(0, -sale.quantity),
-          unit: sale.unit || '',
-        });
+        if (existingItem) {
+          // If the item exists, update the quantity and price
+          const updatedValues = {
+            ...existingItem,
+            quantity: existingItem.quantity + values.quantity, // Update quantity as needed
+            price: values.price, // Update price from the input values
+          };
+          updateStock(existingItem._id, updatedValues);
+          setIsModalVisible(false);
+          setEditingStock(null);
+        } else {
+          addStock(values);
+          setIsModalVisible(false);
+        }
       }
-    });
-
-    return updatedStock;
+    } catch (error) {
+      message.error("Error adding/updating stock", error);
+    }
   };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setEditingStock(null);
+  };
+
+  const handleEdit = (record) => {
+    setEditingStock(record);
+    setIsModalVisible(true); // Open modal with editing data
+  };
+
+  const columns = [
+    { title: "Item Name", dataIndex: "itemName", key: "itemName" },
+    { title: "Category", dataIndex: "category", key: "category" },
+    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+    { title: "Unit", dataIndex: "unit", key: "unit" },
+    { title: "Price", dataIndex: "price", key: "price" },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <Space size="small">
+          <IconButton color="secondary" onClick={() => handleEdit(updateStock)}>
+            <EditOutlined />
+          </IconButton>
+          <IconButton color="error" onClick={() => deleteStock(record._id)}>
+            <DeleteOutline />
+          </IconButton>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <StockDetails 
-        stockData={stockData} 
-        loading={loading} 
-        searchText={searchText} 
-        setSearchText={setSearchText} 
+      {/* Add Button to show the form modal */}
+      <Button type="primary" onClick={() => setIsModalVisible(true)}>
+        Add Stock
+      </Button>
+
+      {/* Stock Table */}
+      <Table
+        dataSource={stockData}
+        columns={columns}
+        rowKey={(record) => record._id}
+        loading={loading}
+        style={{ marginTop: 16 }}
       />
+
+      {/* Stock Form Modal */}
+      <Modal
+        title={editingStock ? "Edit Stock" : "Add Stock"}
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null} // Disable default footer buttons
+      >
+        <StockForm
+          initialValues={
+            editingStock || {
+              itemName: "",
+              category: "",
+              quantity: 0,
+              unit: "",
+              price: 0,
+              expiredDate: null,
+            }
+          }
+          onFinish={handleAddStock}
+          onCancel={handleCancel}
+        />
+      </Modal>
     </div>
   );
 };

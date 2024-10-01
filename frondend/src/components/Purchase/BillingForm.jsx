@@ -4,6 +4,7 @@ import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useSuppliers } from "../../context/supplierContext";
 import { Formik, Field, Form, FieldArray } from "formik";
 import * as Yup from "yup"; // For validation
+import { useStocks } from "../../context/stocksContext";
 
 const { Option } = Select;
 
@@ -32,6 +33,7 @@ const validationSchema = Yup.object().shape({
 
 const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
   const { suppliers } = useSuppliers();
+  const { stockData } = useStocks();
 
   return (
     <Formik
@@ -70,13 +72,13 @@ const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
             {/* Supplier and Purchase Date */}
             <Row gutter={16} style={{ marginBottom: 0 }}>
               <Col span={12}>
-                <label>Suppliers</label>
+                <label style={{ paddingLeft: "5px" }}>Suppliers</label>
                 <Select
                   name="supplier"
                   className="ant-input"
-                  value={values.supplier}
+                  value={values.supplier || null} // Ensure null when no value is selected
                   onChange={(value) => setFieldValue("supplier", value)}
-                  placeholder="Select a supplier"
+                  placeholder="Select a supplier" // Placeholder text
                 >
                   {suppliers.map((supplier) => (
                     <Option key={supplier._id} value={supplier.shopName}>
@@ -167,12 +169,11 @@ const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                           <Select
                             name={`items.${index}.unit`}
                             className="ant-input"
-                            value={values.items[index].unit}
+                            value={values.items[index].unit || null} // Ensure null when no value is selected
                             onChange={(value) =>
                               setFieldValue(`items.${index}.unit`, value)
                             }
                             placeholder="unit"
-                            // defaultValue={"unit"}
                           >
                             <Option value="kg">KG</Option>
                             <Option value="liter">Ltr</Option>
@@ -252,14 +253,15 @@ const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
 
                   {/* Display total price */}
                   <div>
-                    <Row gutter={16} justify="start" style={{ marginTop: 20 }}>
+                    <Row gutter={16}>
                       <Col span={8}>
-                        <div style={{ textAlign: "left" }}>
-                          {/* Total */}
-                          <div>
-                            <strong>Total:</strong>
-                            {values.total || 0}
-                          </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-start",
+                          }}
+                        >
+                          <strong>Total purchase:</strong> {values.total || 0}
                         </div>
                       </Col>
                     </Row>

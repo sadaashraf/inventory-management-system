@@ -1,9 +1,39 @@
 import mongoose from "mongoose";
 
-const stockSchema = new mongoose.Schema({
-  itemName: { type: String, required: true, index: true },
-  availableQuantity: { type: Number, required: true, min: 0 },
-  order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
-}, { timestamps: true });
+const { Schema, model } = mongoose;
 
-export default mongoose.model('Stock', stockSchema);
+const stockSchema = new Schema(
+  {
+    itemName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    unit: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  { timestamps: true }
+);
+
+// Create the Stock model using the schema
+const Stock = model("Stock", stockSchema);
+
+export default Stock;

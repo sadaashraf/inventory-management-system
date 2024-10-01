@@ -33,6 +33,8 @@ import PurchaseDetail from './components/Purchase/PurchaseDetail';
 import Departments from './components/Department/departments';
 import DepartmentDetail from './components/Department/departmentDetail';
 import IssueDetail from './components/Issue/IssueDetail';
+import LocalGroceryStoreIcon from '@mui/icons-material/LocalGroceryStore';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -125,11 +127,10 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
 const menuItems = [
   { title: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { title: 'Purchase', icon: <InventoryIcon />, path: '/purchase' },
-  { title: 'Supplier', icon: <InventoryIcon />, path: '/supplier' },
-
+  { title: 'Supplier', icon: <LocalGroceryStoreIcon />, path: '/supplier' },
+  { title: 'Issue', icon: <ShoppingCartCheckoutIcon />, path: '/issue' },
   { title: 'Department', icon: <InventoryIcon />, path: '/departments' },
-  
-  { title: 'Issue', icon: <MonetizationOnIcon />, path: '/issue' },
+
   { title: 'Stock', icon: <StoreIcon />, path: '/stock' },
 ];
 

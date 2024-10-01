@@ -74,7 +74,7 @@ const PurchaseDetail = () => {
             <TableBody>
               {dataSource.items?.map((item, index) => (
                 <TableRow key={item._id}>
-                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{index+1}</TableCell>
                   <TableCell>{item.itemName}</TableCell>
                   <TableCell>{`${item.quantity} ${item.unit}`}</TableCell>
                   <TableCell>{item.unitPrice}</TableCell>
@@ -82,20 +82,12 @@ const PurchaseDetail = () => {
                 </TableRow>
               ))}
             </TableBody>
-            <TableFooter>
-              <TableRow >
-                <TableCell colSpan={7} style={{ backgroundColor: "#f4f4f4" }}>
-                  <Typography variant="body1" style={{ float:'right',paddingRight:70}}>
-                    <strong>Total:</strong> {dataSource.total}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            </TableFooter>
           </Table>
         </TableContainer>
       </Grid>
     </Grid>
   );
+  
 };
 
 export default PurchaseDetail;

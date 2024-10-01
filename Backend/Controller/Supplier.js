@@ -21,7 +21,7 @@ export const getAllSuppliers = async (req, res) => {
 
 export const getSupplierById = async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.params.id); // Find supplier by ID
+    const supplier = await Supplier.findById(req.params.id).populate('order'); // Find supplier by ID
     if (!supplier) {
       return res.status(404).json({ message: "Supplier not found" }); // Return 404 if supplier is not found
     }

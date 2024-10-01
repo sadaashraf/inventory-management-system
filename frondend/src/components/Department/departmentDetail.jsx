@@ -8,10 +8,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableFooter,
   Paper,
-  IconButton,
 } from "@mui/material";
-import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { useDepartments } from "./departmentsContext"; // Ensure correct context
 import { useParams } from "react-router-dom";
 
@@ -19,17 +18,13 @@ const DepartmentDetail = () => {
   const { departments } = useDepartments(); // Use the department context instead of suppliers
   const { id } = useParams();
   const department = departments.find((item) => item._id === id); // Use department instead of supplier
-  console.log("department", department);
+
   const calculateTotal = (unitPrice, quantity) => unitPrice * quantity;
 
-  const handleEdit = (product) => {
-    // Edit logic
-    console.log("Edit product", product);
-  };
-
-  const handleDelete = (productId) => {
-    // Delete logic
-    console.log("Delete product", productId);
+  const calculateTotalPrice = () => {
+    return department.issuedItems.reduce((total, product) => {
+      return total + calculateTotal(product.unitPrice, product.quantity);
+    }, 0);
   };
 
   // Ensure department exists before rendering
@@ -48,7 +43,7 @@ const DepartmentDetail = () => {
             <TableHead>
               {/* Department Info Row */}
               <TableRow>
-                <TableCell colSpan={7} style={{ backgroundColor: "#f4f4f4" }}>
+                <TableCell colSpan={5} style={{ backgroundColor: "#f4f4f4" }}>
                   <Typography variant="body1">
                     <strong>Department:</strong> {department.name}
                   </Typography>
@@ -68,7 +63,6 @@ const DepartmentDetail = () => {
                 <TableCell style={{ color: "#fff" }}>Quantity</TableCell>
                 <TableCell style={{ color: "#fff" }}>Unit Price</TableCell>
                 <TableCell style={{ color: "#fff" }}>Total</TableCell>
-                <TableCell style={{ color: "#fff" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -78,24 +72,22 @@ const DepartmentDetail = () => {
                   <TableCell>{product.itemName}</TableCell>
                   <TableCell>{`${product.quantity} ${product.unit}`}</TableCell>
                   <TableCell>{product.unitPrice}</TableCell>
-                  <TableCell>{product.total}</TableCell>
                   <TableCell>
-                    <IconButton
-                      onClick={() => handleEdit(product)}
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleDelete(product.id)}
-                      color="secondary"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    {calculateTotal(product.unitPrice, product.quantity)}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4} style={{ textAlign: "right", fontWeight: "bold" }}>
+                  Total:
+                </TableCell>
+                <TableCell>
+                  {calculateTotalPrice()}
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </TableContainer>
       </Grid>

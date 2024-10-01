@@ -7,8 +7,10 @@ export const createPurchase = async (req, res) => {
   try {
     const savedPurchase = await newPurchase.save();
     try {
-      await Supplier.findByIdAndUpdate(supplierId, {
-        $push: { order: savedPurchase },
+      savedPurchase.items.map(async (item) => {
+        await Supplier.findByIdAndUpdate(supplierId, {
+          $push: { order: item },
+        });
       });
     } catch (error) {
       res.status(500).json("Internal server error", error);
@@ -48,18 +50,24 @@ export const updatePurchase = async (req, res) => {
     res.status(500).json(err);
   }
 };
-
 export const deletePurchase = async (req, res) => {
   const { supplierId } = req.params;
   try {
-    await Purchase.findByIdAndDelete(req.params.id);
-    try {
+    const purchase = await Purchase.findByIdAndDelete(req.params.id);
+
+    if (purchase) {
+      purchase.items.map(async(item)=>{
       await Supplier.findByIdAndUpdate(supplierId, {
-        $pull: { order: req.params.id },
+        $pull: { order: item._id },
+      })
+    })
+
+      // Additional step: Delete associated items if needed
+      await Item.deleteMany({
+        _id: { $in: purchase.items.map((item) => item._id) },
       });
-    } catch (error) {
-      res.status(500).json("Internal server error", error);
     }
+
     res.status(200).json("Purchase has been deleted.");
   } catch (err) {
     res.status(500).json(err);

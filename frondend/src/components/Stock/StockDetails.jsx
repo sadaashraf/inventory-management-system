@@ -1,20 +1,31 @@
 import React from "react";
 import { Table, Input, Empty, Button } from "antd";
 
-const StockDetails = ({ stockData, loading, searchText, setSearchText }) => {
-  const filteredData = stockData.filter(item => 
-    item.itemName?.toLowerCase().includes(searchText.toLowerCase())
-  );
+const StockDetails = ({ stockData, searchText, setSearchText, loading }) => {
+  console.log("StockData in StockDetails:", stockData); // Log stockData
+
+  // Ensure itemName exists in stockData
+  stockData.forEach(item => {
+    console.log("Item Structure:", item); // Log each stock item structure
+  });
+
+  const filteredData = stockData.filter(item => {
+    if (!item.itemName) {
+      console.error("Missing itemName for item:", item); // Log items without itemName
+      return false;
+    }
+    return item.itemName.toLowerCase().includes(searchText.toLowerCase());
+  });
+
+  console.log("Filtered Data:", filteredData); // Log the filtered data
 
   // Function to handle restocking
   const handleRestock = (itemName) => {
-    // Implement your restocking logic here
     console.log(`Restocking ${itemName}`);
   };
 
   // Function to handle stock action
   const handleStock = (itemName) => {
-    // Implement your stock logic here
     console.log(`Stocking ${itemName}`);
   };
 
@@ -46,7 +57,7 @@ const StockDetails = ({ stockData, loading, searchText, setSearchText }) => {
                 <span>
                   {text} {record.unit}
                 </span>
-              )
+              ),
             },
             {
               title: "Issue Quantity",
@@ -56,7 +67,7 @@ const StockDetails = ({ stockData, loading, searchText, setSearchText }) => {
                 <span>
                   {text} {record.unit}
                 </span>
-              )
+              ),
             },
             {
               title: "Available Quantity",
@@ -66,7 +77,7 @@ const StockDetails = ({ stockData, loading, searchText, setSearchText }) => {
                 <span>
                   {text} {record.unit}
                 </span>
-              )
+              ),
             },
             {
               title: 'Actions',

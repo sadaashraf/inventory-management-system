@@ -2,17 +2,15 @@ import React, { useState } from "react";
 import { Table, Input, Button, Space, Modal } from "antd";
 import Highlighter from "react-highlight-words";
 import {
-  SearchOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
+  SearchOutlined,PlusOutlined, EditOutlined,DeleteOutlined,EyeOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import DepartmentForm from "./depermentForm";
 import { useDepartments } from "./departmentsContext";
 import { useNavigate } from "react-router-dom";
-
+import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
+import ModeIcon from '@mui/icons-material/Mode';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 const Departments = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -121,10 +119,10 @@ const Departments = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="middle">
-          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button type="link" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record._id)} />
-          <Button type="link" icon={<EyeOutlined />} onClick={() => navigate(`/department-detail/${record._id}`)} />
+        <Space size="left">
+          <Button type="link" icon={<ModeIcon />} onClick={() => handleEdit(record)} />
+          <Button type="link" icon={<DeleteSharpIcon />} danger onClick={() => handleDelete(record._id)} />
+          <Button type="link" icon={<VisibilityIcon />} onClick={() => navigate(`/department-detail/${record._id}`)} />
         </Space>
       ),
     },

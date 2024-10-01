@@ -82,15 +82,6 @@ const IssueDetail = () => {
                 </TableRow>
               ))}
             </TableBody>
-            <TableFooter>
-              <TableRow >
-                <TableCell colSpan={7} style={{ backgroundColor: "#f4f4f4" }}>
-                  <Typography variant="body1" style={{textAlign:'left', float:'right'}}>
-                    <strong>Total:</strong> {dataSource.total}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            </TableFooter>
           </Table>
         </TableContainer>
       </Grid>
