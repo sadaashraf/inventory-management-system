@@ -1,123 +1,118 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Modal, message } from "antd";
+import React, { useState, useEffect } from "react";
+import { notification } from "antd";
 import axios from "axios";
-import StockForm from "./StockForm"; // Assuming StockForm is the form component
-import { useStocks } from "../../context/stocksContext";
-import moment from "moment";
-import { Delete, DeleteOutline, EditOutlined } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import StockDetails from "./StockDetails";
 
 const Stock = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingStock, setEditingStock] = useState(null); // To track editing stock
+  const [searchText, setSearchText] = useState("");
+  const [stockData, setStockData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const { stockData, loading, addStock, updateStock, deleteStock } =
-    useStocks();
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const purchasesResponse = await axios.get("http://localhost:8000/api/purchases");
+        const salesResponse = await axios.get("http://localhost:8000/api/sales");
+        const calculatedStock = calculateStock(purchasesResponse.data, salesResponse.data);
+        console.log("Calculated Stock:", calculatedStock);
+        setStockData(calculatedStock);
 
-  // Handle form submission to add a new stock item
-  const handleAddStock = async (values) => {
-    try {
-      if (editingStock) {
-        // If editing, update the existing stock
-        updateStock(editingStock._id, values);
-        setIsModalVisible(false);
-        setEditingStock(null);
-      } else {
-        // If not editing, create a new stock
-        const existingItem = stockData.find(
-          (item) => item.itemName === values.itemName
-        );
+        // Save stock data to backend
+        await saveStockData(calculatedStock); // Save data
 
-        if (existingItem) {
-          // If the item exists, update the quantity and price
-          const updatedValues = {
-            ...existingItem,
-            quantity: existingItem.quantity + values.quantity, // Update quantity as needed
-            price: values.price, // Update price from the input values
-          };
-          updateStock(existingItem._id, updatedValues);
-          setIsModalVisible(false);
-          setEditingStock(null);
-        } else {
-          addStock(values);
-          setIsModalVisible(false);
-        }
+      } catch (error) {
+        notification.error({
+          message: "Error Loading Data",
+          description: "An error occurred while fetching stock data.",
+        });
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchData();
+  }, []);
+
+  const calculateStock = (purchaseData, saleData) => {
+    const updatedStock = [];
+
+    // Process purchase data
+    purchaseData.forEach(purchase => {
+      purchase.items.forEach(item => {
+        const existingItem = updatedStock.find(stockItem => stockItem.itemName === item.itemName);
+        if (existingItem) {
+          existingItem.purchaseQuantity += item.quantity;
+          existingItem.availableQuantity += item.quantity;
+        } else {
+          updatedStock.push({
+            itemName: item.itemName,
+            purchaseQuantity: item.quantity,
+            saleQuantity: 0,
+            availableQuantity: item.quantity,
+            unit: item.unit || '',
+          });
+        }
+      });
+    });
+
+    // Process sale data
+    saleData.forEach(sale => {
+      sale.items.forEach(item => {
+        const existingItem = updatedStock.find(stockItem => stockItem.itemName === item.itemName);
+        if (existingItem) {
+          existingItem.saleQuantity += item.quantity;
+          existingItem.availableQuantity = Math.max(0, existingItem.availableQuantity - item.quantity);
+        } else {
+          updatedStock.push({
+            itemName: item.itemName,
+            purchaseQuantity: 0,
+            saleQuantity: item.quantity,
+            availableQuantity: Math.max(0, -item.quantity),
+            unit: item.unit || '',
+          });
+        }
+      });
+    });
+
+    return updatedStock;
+  };
+
+  const saveStockData = async (calculatedStock) => {
+    try {
+      await axios.post("http://localhost:8000/api/stock", calculatedStock);
+      notification.success({
+        message: "Success",
+        description: "Stock data saved successfully!",
+      });
     } catch (error) {
-      message.error("Error adding/updating stock", error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.error("Error response:", error.response.data);
+        notification.error({
+          message: "Error Saving Data",
+          description: error.response.data.error || "An error occurred while saving stock data.",
+        });
+      } else {
+        console.error("Error:", error.message);
+        notification.error({
+          message: "Error Saving Data",
+          description: "An error occurred while saving stock data.",
+        });
+      }
     }
   };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setEditingStock(null);
-  };
-
-  const handleEdit = (record) => {
-    setEditingStock(record);
-    setIsModalVisible(true); // Open modal with editing data
-  };
-
-  const columns = [
-    { title: "Item Name", dataIndex: "itemName", key: "itemName" },
-    { title: "Category", dataIndex: "category", key: "category" },
-    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
-    { title: "Unit", dataIndex: "unit", key: "unit" },
-    { title: "Price", dataIndex: "price", key: "price" },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (text, record) => (
-        <Space size="small">
-          <IconButton color="secondary" onClick={() => handleEdit(updateStock)}>
-            <EditOutlined />
-          </IconButton>
-          <IconButton color="error" onClick={() => deleteStock(record._id)}>
-            <DeleteOutline />
-          </IconButton>
-        </Space>
-      ),
-    },
-  ];
+  
 
   return (
     <div>
-      {/* Add Button to show the form modal */}
-      <Button type="primary" onClick={() => setIsModalVisible(true)}>
-        Add Stock
-      </Button>
-
-      {/* Stock Table */}
-      <Table
-        dataSource={stockData}
-        columns={columns}
-        rowKey={(record) => record._id}
-        loading={loading}
-        style={{ marginTop: 16 }}
+      <StockDetails 
+        stockData={stockData} 
+        loading={loading} 
+        searchText={searchText} 
+        setSearchText={setSearchText} 
       />
-
-      {/* Stock Form Modal */}
-      <Modal
-        title={editingStock ? "Edit Stock" : "Add Stock"}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null} // Disable default footer buttons
-      >
-        <StockForm
-          initialValues={
-            editingStock || {
-              itemName: "",
-              category: "",
-              quantity: 0,
-              unit: "",
-              price: 0,
-              expiredDate: null,
-            }
-          }
-          onFinish={handleAddStock}
-          onCancel={handleCancel}
-        />
-      </Modal>
     </div>
   );
 };
