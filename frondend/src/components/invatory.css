@@ -1,0 +1,16 @@
+.custom-table .ant-table-thead > tr > th {
+    background-color: rgb(39, 151, 255); /* Apply your background color here */
+    color: white; /* Optional: Change text color */
+    font-weight: bold; /* Optional: Bold text */
+    padding: 10px;
+    text-align: center;
+  }
+  .css-table .ant-table-thead > tr > th {
+    background-color: rgb(39, 151, 255); /* Apply your background color here */
+    color: white; /* Optional: Change text color */
+    font-weight: bold; /* Optional: Bold text */
+    padding: 10px;
+    /* text-align: center; */
+  }
+  
+  

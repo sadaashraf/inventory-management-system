@@ -14,6 +14,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import SupplierForm from "./SupplierForm";
 import { useSuppliers } from "../../context/supplierContext";
 import { useNavigate } from "react-router-dom";
+import "../invatory.css";
 
 const Supplier = () => {
   const [searchText, setSearchText] = useState("");
@@ -175,6 +176,7 @@ const Supplier = () => {
 
   return (
     <div>
+      <h3 style={{ marginTop: 20 ,marginLeft:5}}>Supplier List</h3>
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Add Supplier
@@ -185,6 +187,7 @@ const Supplier = () => {
         dataSource={suppliers}
         rowKey={(record) => record._id}
         pagination={true}
+        className="css-table"
       />
 
       <Modal

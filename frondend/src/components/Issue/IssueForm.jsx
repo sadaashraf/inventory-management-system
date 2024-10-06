@@ -1,46 +1,61 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Input, Button, Select, Row, Col } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { Formik, Field, Form, FieldArray } from "formik";
 import * as Yup from "yup"; // For validation
 import { useDepartments } from "../Department/departmentsContext";
+import { useStocks } from "../../context/stocksContext";
 
 const { Option } = Select;
 
 // Validation schema for Formik
-const validationSchema = Yup.object().shape({
-  department: Yup.string().required("Supplier is required"), // Supplier is required
-  issueDate: Yup.string().required("Purchase Date is required"), // Purchase date is required
+const validationSchema = (stockData = []) => Yup.object().shape({
+  department: Yup.string().required("Department is required"),
+  issueDate: Yup.string().required("Issue Date is required"),
   items: Yup.array()
     .of(
       Yup.object().shape({
-        itemName: Yup.string().required("Item name is required"), // Item name is required
+        itemName: Yup.string().required("Item name is required"),
         quantity: Yup.number()
-          .required("Quantity is required") // Quantity is required
-          .positive("Quantity must be greater than 0"), // Must be greater than 0
-        unit: Yup.string().required("Unit is required"), // Unit is required
+          .required("Quantity is required")
+          .positive("Quantity must be greater than 0")
+          .test("check-stock", "Quantity exceeds available stock", function (value) {
+            const itemName = this.parent.itemName;
+            const stockItem = stockData.find((item) => item.itemName === itemName);
+            return stockItem ? value <= stockItem.quantity : true;
+          }),
+        unit: Yup.string().required("Unit is required"),
         unitPrice: Yup.number()
-          .required("Unit price is required") // Unit price is required
-          .positive("Unit price must be greater than 0"), // Must be greater than 0
-        // total: Yup.number()
-        //   .required("Total is required") // Total is required
-        //   .positive("Total must be greater than 0"), // Must be greater than 0
+          .required("Unit price is required")
+          .positive("Unit price must be greater than 0"),
       })
     )
-    .min(1, "At least one item is required"), // Ensure at least one item is added
+    .min(1, "At least one item is required"),
 });
 
 const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
   const { departments } = useDepartments();
-  // console.log("depa", depa);
+  const { stockData = [] } = useStocks(); // Ensure stockData defaults to an empty array
+  const [filteredItems, setFilteredItems] = useState([]);
+
+  // Filter stock items based on available quantity
+  useEffect(() => {
+    const itemsWithStock = stockData.filter((item) => item.quantity > 0);
+    setFilteredItems(itemsWithStock);
+  }, [stockData]);
+
+  // Calculate total for all items in the form
+  const calculateTotal = (items) => {
+    return items.reduce((acc, curr) => acc + (curr.unitPrice * curr.quantity || 0), 0);
+  };
+
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={(values) => {
-        console.log("values", values);
-        onFinish(values); // Pass the form data to the onFinish function
-      }}
+      validationSchema={validationSchema(stockData)} // Pass stockData to the validation schema
+      onSubmit={(values) => onFinish(values)}
+      validateOnChange={false}
+      validateOnBlur={false}
     >
       {({
         values,
@@ -49,243 +64,184 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
         handleChange,
         setFieldValue,
         handleSubmit,
-      }) => {
-        // Calculate overall total
-        // Function to calculate the grand total dynamically
-        const calculateGrandTotal = () => {
-          const grandTotal = values.items.reduce((acc, item) => {
-            return acc + (item.total || 0); // Sum all item totals
-          }, 0);
-          return grandTotal;
-        };
+      }) => (
+        <Form>
+          <Row gutter={16} style={{ marginBottom: 0 }}>
+            <Col span={12}>
+              <label>Department</label>
+              <Select
+                name="department"
+                className="ant-input"
+                value={values.department}
+                onChange={(value) => setFieldValue("department", value)}
+                placeholder="Select a department"
+              >
+                {departments.map((dept) => (
+                  <Option key={dept._id} value={dept.name}>
+                    {dept.name}
+                  </Option>
+                ))}
+              </Select>
+              {touched.department && errors.department && (
+                <div className="error">{errors.department}</div>
+              )}
+            </Col>
+            <Col span={12}>
+              <label>Issue Date</label>
+              <Field
+                as={Input}
+                name="issueDate"
+                type="date"
+                className="ant-input"
+              />
+              {touched.issueDate && errors.issueDate && (
+                <div className="error">{errors.issueDate}</div>
+              )}
+            </Col>
+          </Row>
 
-        // useEffect to update the grand total whenever items array changes
-        useEffect(() => {
-          const total = calculateGrandTotal();
-          setFieldValue("total", total); // Update the total field in Formik state
-        }, [values.items, setFieldValue]); // Recalculate whenever items change
-
-        return (
-          <Form>
-            {/* Supplier and Purchase Date */}
-            <Row gutter={16} style={{ marginBottom: 0 }}>
-              <Col span={12}>
-                <label>Department</label>
-                <Select
-                  name="department"
-                  className="ant-input"
-                  value={values.department}
-                  onChange={(value) => setFieldValue("department", value)}
-                  placeholder="Select a department"
-                >
-                  {departments.map((dept) => (
-                    <Option key={dept._id} value={dept.name}>
-                      {dept.name}
-                    </Option>
-                  ))}
-                </Select>
-
-                {touched.department && errors.department && (
-                  <div className="error">{errors.department}</div>
-                )}
-              </Col>
-
-              <Col span={12}>
-                <label>Issue Date</label>
-                <Field
-                  as={Input}
-                  name="issueDate"
-                  type="date"
-                  className="ant-input"
-                />
-                {touched.issueDate && errors.issueDate && (
-                  <div className="error">{errors.issueDate}</div>
-                )}
-              </Col>
-            </Row>
-
-            {/* Items Table */}
-            <FieldArray name="items">
-              {({ remove, push }) => (
-                <>
-                  <Table
-                    dataSource={values.items}
-                    pagination={false}
-                    rowKey={(record, index) => index}
-                    columns={[
-                      {
-                        title: "Item Name",
-                        dataIndex: "itemName",
-                        render: (_, record, index) => (
-                          <>
-                            <Field
-                              as={Input}
-                              name={`items.${index}.itemName`}
-                              className="ant-input"
-                              placeholder="Item Name"
-                              onChange={handleChange}
-                            />
-                            {touched.itemName && errors.itemName && (
-                              <div className="error">{errors.itemName}</div>
-                            )}
-                          </>
-                        ),
-                      },
-                      {
-                        title: "Quantity",
-                        dataIndex: "quantity",
-                        render: (_, record, index) => (
-                          <>
-                            <Field
-                              as={Input}
-                              name={`items.${index}.quantity`}
-                              type="number"
-                              className="ant-input"
-                              placeholder="Quantity"
-                              onChange={(e) => {
-                                handleChange(e);
-                                const newQuantity = e.target.value;
-                                const unitPrice =
-                                  values.items[index].purchasePrice || 0;
-                                const total = unitPrice * newQuantity;
-
-                                // Update total for the item
-                                setFieldValue(`items.${index}.total`, total);
-                                // calculateGrandTotal(); // Recalculate the grand total
-                              }}
-                            />
-                            {touched[index]?.quantity && errors[index].quantity && (
-                              <div className="error">{errors[index].quantity}</div>
-                            )}
-                          </>
-                        ),
-                      },
-                      {
-                        title: "Unit",
-                        dataIndex: "unit",
-                        render: (_, record, index) => (
+          <FieldArray name="items">
+            {({ remove, push }) => (
+              <>
+                <Table
+                  dataSource={values.items}
+                  pagination={false}
+                  rowKey={(record, index) => index}
+                  columns={[
+                    {
+                      title: "Item Name",
+                      dataIndex: "itemName",
+                      render: (_, record, index) => (
+                        <>
                           <Select
-                            name={`items.${index}.unit`}
+                            name={`items.${index}.itemName`}
                             className="ant-input"
-                            value={values.items[index].unit}
-                            onChange={(value) =>
-                              setFieldValue(`items.${index}.unit`, value)
-                            }
-                            placeholder="unit"
-                            // defaultValue={"unit"}
+                            value={values.items[index].itemName || null}
+                            onChange={(value) => setFieldValue(`items.${index}.itemName`, value)}
+                            placeholder="Select an item from stock"
                           >
-                            <Option value="kg">KG</Option>
-                            <Option value="liter">Ltr</Option>
-                            <Option value="pieces">Pcs</Option>
+                            {filteredItems.map((item) => (
+                              <Option key={item._id} value={item.itemName}>
+                                {item.itemName}
+                              </Option>
+                            ))}
                           </Select>
-                        ),
-                      },
-                      {
-                        title: "Unit Price",
-                        dataIndex: "unitPrice",
-                        render: (_, record, index) => (
+                          {touched.items?.[index]?.itemName && errors.items?.[index]?.itemName && (
+                            <div className="error">{errors.items[index].itemName}</div>
+                          )}
+                        </>
+                      ),
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      render: (_, record, index) => (
+                        <>
                           <Field
                             as={Input}
-                            name={`items.${index}.unitPrice`}
+                            name={`items.${index}.quantity`}
                             type="number"
                             className="ant-input"
-                            placeholder="Unit Price"
-                            onChange={(e) => {
-                              handleChange(e);
-                              const newUnitPrice = e.target.value;
-                              const quantity =
-                                values.items[index].quantity || 0;
-                              const total = newUnitPrice * quantity;
-
-                              // Update total for the item
-                              setFieldValue(`items.${index}.total`, total);
-                              // calculateGrandTotal(); // Recalculate the grand total
-                            }}
+                            onChange={handleChange}
+                            placeholder="Quantity"
                           />
-                        ),
-                      },
-                      {
-                        title: "Total",
-                        dataIndex: "total",
-                        render: (_, record, index) => (
-                          <Field
-                            as={Input}
-                            name={`items.${index}.total`}
-                            className="ant-input"
-                            readOnly
-                            value={values.items[index].total || 0}
-                          />
-                        ),
-                      },
-                      {
-                        title: "Actions",
-                        dataIndex: "actions",
-                        render: (_, record, index) => (
-                          <Button
-                            icon={<DeleteOutlined />}
-                            onClick={() => {
-                              remove(index);
-                              // calculateGrandTotal(); // Recalculate the grand total after removal
-                            }}
-                          />
-                        ),
-                      },
-                    ]}
-                    footer={() => (
-                      <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={() =>
-                          push({
-                            itemName: "",
-                            quantity: "",
-                            unit: "",
-                            unitPrice: "",
-                            total: 0,
-                          })
-                        }
-                      >
-                        Add Row
-                      </Button>
-                    )}
-                  />
+                          {touched.items?.[index]?.quantity && errors.items?.[index]?.quantity && (
+                            <div className="error">{errors.items[index].quantity}</div>
+                          )}
+                        </>
+                      ),
+                    },
+                    {
+                      title: "Unit",
+                      dataIndex: "unit",
+                      render: (_, record, index) => (
+                        <Select
+                          name={`items.${index}.unit`}
+                          className="ant-input"
+                          value={values.items[index].unit || null}
+                          onChange={(value) => setFieldValue(`items.${index}.unit`, value)}
+                          placeholder="unit"
+                        >
+                          <Option value="kg">KG</Option>
+                          <Option value="liter">Ltr</Option>
+                          <Option value="pieces">Pcs</Option>
+                        </Select>
+                      ),
+                    },
+                    {
+                      title: "Unit Price",
+                      dataIndex: "unitPrice",
+                      render: (_, record, index) => (
+                        <Field
+                          as={Input}
+                          name={`items.${index}.unitPrice`}
+                          type="number"
+                          className="ant-input"
+                        />
+                      ),
+                    },
+                    {
+                      title: "Total",
+                      dataIndex: "total",
+                      render: (_, record, index) => (
+                        <Input
+                          className="ant-input"
+                          readOnly
+                          value={values.items[index].unitPrice * values.items[index].quantity || 0}
+                        />
+                      ),
+                    },
+                    {
+                      title: "Actions",
+                      dataIndex: "actions",
+                      render: (_, record, index) => (
+                        <Button icon={<DeleteOutlined />} onClick={() => remove(index)} />
+                      ),
+                    },
+                  ]}
+                  footer={() => (
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() =>
+                        push({
+                          itemName: "",
+                          quantity: "",
+                          unit: "",
+                          unitPrice: "",
+                          total: 0,
+                        })
+                      }
+                    >
+                      Add Row
+                    </Button>
+                  )}
+                />
+                <Row gutter={16} justify="start" style={{ marginTop: 20 }}>
+                  <Col span={8}>
+                    <strong>Total: </strong> {calculateTotal(values.items) || 0}
+                  </Col>
+                </Row>
+              </>
+            )}
+          </FieldArray>
 
-                  {/* Display total price */}
-                  <div>
-                    <Row gutter={16} justify="start" style={{ marginTop: 20 }}>
-                      <Col span={8}>
-                        <div style={{ textAlign: "left" }}>
-                          {/* Total */}
-                          <div>
-                            <strong>Total:</strong>
-                            {values.total || 0}
-                          </div>
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                </>
-              )}
-            </FieldArray>
-
-            {/* Form Buttons */}
-            <Row style={{ marginTop: 10, justifyContent: "end" }}>
-              <Col>
-                <Button
-                  type="primary"
-                  onClick={handleSubmit}
-                  style={{ marginRight: 20 }}
-                >
-                  {!editingItem ? "Add" : "Update"}
-                </Button>
-                <Button onClick={onCancel} type="error">
-                  Cancel
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        );
-      }}
+          <Row style={{ marginTop: 10, justifyContent: "end" }}>
+            <Col>
+              <Button
+                type="primary"
+                onClick={handleSubmit}
+                style={{ marginRight: 20 }}
+              >
+                {!editingItem ? "Add" : "Update"}
+              </Button>
+              <Button onClick={onCancel}>
+                Cancel
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      )}
     </Formik>
   );
 };

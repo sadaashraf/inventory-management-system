@@ -9,26 +9,22 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
+  TableFooter,
 } from "@mui/material";
-
 import { useSuppliers } from "../../context/supplierContext";
 import { useParams } from "react-router-dom";
+
 const SupplierDetail = () => {
-  const { suppliers, updateSupplier, deleteSupplier } = useSuppliers(); // Add update and delete functions from context
+  const { suppliers } = useSuppliers();
   const { id } = useParams();
   const supplier = suppliers.find((item) => item._id === id);
-console.log('supplier', supplier)
+
   const calculateTotal = (unitPrice, quantity) => unitPrice * quantity;
 
-  const handleEdit = (product) => {
-    // Edit logic
-    console.log("Edit product", product);
-  };
-
-  const handleDelete = (productId) => {
-    // Delete logic
-    console.log("Delete product", productId);
+  const calculateTotalPrice = () => {
+    return supplier.order.reduce((total, product) => {
+      return total + calculateTotal(product.unitPrice, product.quantity);
+    }, 0);
   };
 
   return (
@@ -37,55 +33,73 @@ console.log('supplier', supplier)
       spacing={2}
       style={{ padding: "10px", backgroundColor: "#f4f4f4", height: "100vh" }}
     >
-      {/* Product Table with Supplier Info in Header */}
       <Grid item xs={12}>
-        {supplier && <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              {/* Supplier Info Row */}
-              <TableRow>
-                <TableCell colSpan={7} style={{ backgroundColor: "#f4f4f4" }}>
-                  <Typography variant="body1">
-                    <strong>Shop Name:</strong> {supplier.shopName}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Supplier:</strong> {supplier.name}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Address:</strong> {supplier.address}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Contact:</strong> {supplier.phoneNo}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-
-              {/* Column Headers */}
-              <TableRow style={{ backgroundColor: "#009ddc" }}>
-                <TableCell style={{ color: "#fff" }}>no</TableCell>
-                <TableCell style={{ color: "#fff" }}>Product</TableCell>
-                <TableCell style={{ color: "#fff" }}>Quantity</TableCell>
-                <TableCell style={{ color: "#fff" }}>Unit Price</TableCell>
-                <TableCell style={{ color: "#fff" }}>Total</TableCell>
-                
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {supplier.order?.map((product, index) => (
-                <TableRow key={product.id}>
-                  <TableCell>{index+1}</TableCell>
-                  <TableCell>{product.itemName}</TableCell>
-                  <TableCell>{`${product.quantity} ${product.unit}`}</TableCell>
-                  <TableCell>{product.unitPrice}</TableCell>
-                  <TableCell>
-                    {calculateTotal(product.unitPrice, product.quantity)}
+        {supplier ? (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={7} style={{ backgroundColor: "#f4f4f4" }}>
+                    <Typography variant="body1">
+                      <strong>Shop Name:</strong> {supplier.shopName}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Supplier:</strong> {supplier.name}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Address:</strong> {supplier.address}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Contact:</strong> {supplier.phoneNo}
+                    </Typography>
                   </TableCell>
-                 
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>}
+                <TableRow style={{ backgroundColor: "#009ddc" }}>
+                  <TableCell style={{ color: "#fff" }}>no</TableCell>
+                  <TableCell style={{ color: "#fff" }}>Product</TableCell>
+                  <TableCell style={{ color: "#fff" }}>Quantity</TableCell>
+                  <TableCell style={{ color: "#fff" }}>Unit Price</TableCell>
+                  <TableCell style={{ color: "#fff" }}>Total</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {supplier.order?.map((product, index) => (
+                  <TableRow key={product._id || index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{product.itemName}</TableCell>
+                    <TableCell>{`${product.quantity} ${product.unit}`}</TableCell>
+                    <TableCell>{product.unitPrice}</TableCell>
+                    <TableCell>
+                      {calculateTotal(product.unitPrice, product.quantity)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    style={{ textAlign: "right", fontWeight: "bold" }}
+                  >
+                    Balance:
+                  </TableCell>
+                  <TableCell>{supplier.balance}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    style={{ textAlign: "right", fontWeight: "bold" }}
+                  >
+                    Total:
+                  </TableCell>
+                  <TableCell>{calculateTotalPrice()}</TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="h6">Loading supplier details...</Typography>
+        )}
       </Grid>
     </Grid>
   );

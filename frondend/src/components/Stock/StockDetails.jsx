@@ -42,6 +42,7 @@ const StockDetails = ({ stockData, searchText, setSearchText, loading }) => {
         <p>Loading...</p>
       ) : filteredData.length > 0 ? (
         <Table
+        className="css-table"
           dataSource={filteredData}
           columns={[
             {
@@ -50,40 +51,27 @@ const StockDetails = ({ stockData, searchText, setSearchText, loading }) => {
               key: "itemName",
             },
             {
-              title: "Purchase Quantity",
-              dataIndex: "purchaseQuantity",
-              key: "purchaseQuantity",
-              render: (text, record) => (
-                <span>
-                  {text} {record.unit}
-                </span>
-              ),
-            },
-            {
-              title: "Issue Quantity",
-              dataIndex: "saleQuantity",
-              key: "saleQuantity",
-              render: (text, record) => (
-                <span>
-                  {text} {record.unit}
-                </span>
-              ),
+              title: "Category",
+              dataIndex: "category",
+              key: "category",
+              
             },
             {
               title: "Available Quantity",
-              dataIndex: "availableQuantity",
-              key: "availableQuantity",
+              dataIndex: "quantity",
+              key: "quantity",
               render: (text, record) => (
                 <span>
                   {text} {record.unit}
                 </span>
               ),
             },
+            
             {
               title: 'Actions',
               key: 'actions',
               render: (text, record) => (
-                record.availableQuantity < 10 ? (
+                record.quantity < 10 ? (
                   <Button type="primary" danger onClick={() => handleRestock(record.itemName)}>
                     Restock
                   </Button>

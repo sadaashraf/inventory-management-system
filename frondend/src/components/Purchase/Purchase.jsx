@@ -1,27 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Space, message } from "antd";
-import {
-  PlusOutlined,
-} from "@ant-design/icons";
-import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
-import ModeIcon from '@mui/icons-material/Mode';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { PlusOutlined } from "@ant-design/icons";
+import DeleteSharpIcon from "@mui/icons-material/DeleteSharp";
+import ModeIcon from "@mui/icons-material/Mode";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import axios from "axios";
 import moment from "moment";
 import BillingForm from "./BillingForm";
 import { useSuppliers } from "../../context/supplierContext";
-import {
-  Dialog, DialogContent,  DialogTitle,
-} from "@mui/material";
+import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import "../invatory.css";
 const Purchase = () => {
   const [dataSource, setDataSource] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  const Navigate = useNavigate()
+
+  const Navigate = useNavigate();
 
   const { suppliers } = useSuppliers();
 
@@ -58,9 +54,12 @@ const Purchase = () => {
   };
 
   const updatePurchase = async (id, purchaseData) => {
+    const supplierId = suppliers.find(
+      (item) => item.shopName === purchaseData.supplier
+    )._id;
     try {
       const response = await axios.put(
-        `http://localhost:8000/api/purchases/${id}`,
+        `http://localhost:8000/api/purchases/${supplierId}/${id}`,
         purchaseData
       );
       setDataSource((prevData) =>
@@ -73,14 +72,13 @@ const Purchase = () => {
   };
 
   const deletePurchase = async (purchaseData) => {
-    console.log('pu', purchaseData)
     const supplierId = suppliers.find(
       (item) => item.shopName === purchaseData.supplier
     )._id;
-    console.log('supplierId', supplierId)
+    
     try {
       await axios.delete(
-        `http://localhost:8000/api/purchases/${purchaseData._id}/${supplierId}`
+        `http://localhost:8000/api/purchases/${supplierId}/${purchaseData._id}`
       );
       setDataSource((prevData) =>
         prevData.filter((item) => item._id !== purchaseData._id)
@@ -90,6 +88,7 @@ const Purchase = () => {
       message.error("Error deleting purchase");
     }
   };
+  
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -101,13 +100,13 @@ const Purchase = () => {
     setIsModalOpen(true);
   };
   const handleView = (record) => {
-    Navigate(`/purchase-detail/${record._id}`)
-    console.log('record', record)
+    Navigate(`/purchase-detail/${record._id}`);
+    console.log("record", record);
   };
-  
+
   const handleDelete = (id) => {
     deletePurchase(id);
-  }
+  };
   const handleOk = (values) => {
     if (editingItem) {
       updatePurchase(editingItem._id, values);
@@ -174,6 +173,7 @@ const Purchase = () => {
 
   return (
     <div>
+      <h3 style={{ marginTop: 20, marginLeft: 5 }}>Purchase List</h3>
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Add Purchase
@@ -185,6 +185,7 @@ const Purchase = () => {
         rowKey={(record) => record._id}
         pagination={false}
         loading={loading}
+        className="css-table"
       />
       <Dialog
         fullWidth={true}
@@ -202,8 +203,9 @@ const Purchase = () => {
               editingItem || {
                 items: [
                   {
-                    purchaseDate:"",
+                    purchaseDate: "",
                     itemName: "",
+                    category: "",
                     quantity: "",
                     unit: "",
                     unitPrice: "",
@@ -211,8 +213,12 @@ const Purchase = () => {
                   },
                 ],
                 supplier: "",
-                purchaseDate: "",
+                purchaseDate: Date.now(),
                 total: 0,
+                balance: 0,
+                paymentMethod: "",
+                chequeNo: 0,
+                paid: 0,
               }
             }
             onFinish={handleOk}

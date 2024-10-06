@@ -13,7 +13,7 @@ import { useDepartments } from "../Department/departmentsContext";
 import { Dialog, DialogContent,DialogTitle,IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import "../invatory.css";
 const Issue = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -223,6 +223,7 @@ const Issue = () => {
 
   return (
     <div>
+      <h3 style={{ marginTop: 20 ,marginLeft:5}}>Issue List</h3>
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Add Issue
@@ -234,6 +235,7 @@ const Issue = () => {
         rowKey={(record) => record._id}
         pagination={false}
         loading={loading}
+        className="css-table"
       />
       <Dialog
         fullWidth={true}

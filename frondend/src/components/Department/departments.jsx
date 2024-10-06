@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
 import ModeIcon from '@mui/icons-material/Mode';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import "../invatory.css";
+
 const Departments = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -130,12 +132,18 @@ const Departments = () => {
 
   return (
     <div>
+      <h3 style={{ marginTop: 20 ,marginLeft:5}}>Department List</h3>
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Add Department
         </Button>
       </Space>
-      <Table columns={columns} dataSource={departments} rowKey={(record) => record._id} pagination={true} />
+      <Table columns={columns}
+       dataSource={departments} 
+       rowKey={(record) => record._id}
+       pagination={true} 
+       className="css-table"
+        />
 
       <Modal
         title={editingItem ? "Edit Department" : "Add Department"}
