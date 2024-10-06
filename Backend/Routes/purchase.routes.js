@@ -17,9 +17,9 @@ router.get("/", getPurchases);
 router.get("/:id", getPurchase);
 
 // Update a purchase
-router.put("/:id", updatePurchase);
+router.put("/:supplierId/:id", updatePurchase);
 
 // Delete a purchase
-router.delete("/:id/:supplierId", deletePurchase);
+router.delete("/:supplierId/:id", deletePurchase);
 
 export default router;

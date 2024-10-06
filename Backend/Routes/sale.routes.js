@@ -5,7 +5,7 @@ import {
   updateSale, 
   deleteSale, 
   getSale
-} from "../Controller/sale.controlller.js";
+} from "../Controller/sale.controller.js";
 
 const router = express.Router();
 

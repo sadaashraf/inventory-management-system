@@ -6,6 +6,10 @@ const itemSchema = new Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    required: true,
+  },
   quantity: {
     type: Number,
     required: true,
@@ -37,6 +41,26 @@ const purchaseSchema = new Schema({
   total: {
     type: Number,
     required: true,
+  },
+  balance: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  paymentMethod: {
+    type: String,
+    required: true,
+    // enum:['cash', 'cheque']
+  },
+  chequeNo: {
+    type: Number,
+    // required: true,
+    // enum:['cash', 'cheque']
+  },
+  paid: {
+    type: Number,
+    // required: true,
+    // enum:['cash', 'cheque']
   },
 
 });

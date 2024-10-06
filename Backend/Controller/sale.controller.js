@@ -1,21 +1,24 @@
 import Department from "../Models/Department.js";
 import Issue from "../Models/Sale.js";
-
+import Stock from "../Models/Stock.js";
 // Create a new sale
 export const createSale = async (req, res) => {
   const { deptId } = req.params;
   try {
     const sale = new Issue(req.body);
     const savedSale = await sale.save();
-    try {
-      sale.items.map(async (item) => {
-        await Department.findByIdAndUpdate(deptId, {
-          $push: { issuedItems: item },
-        });
+
+    // Update stock quantities
+    await Promise.all(sale.items.map(async (item) => {
+      await Stock.findOneAndUpdate(
+        { itemName: item.itemName }, // Ensure this matches your stock item
+        { $inc: { quantity: -item.quantity } }, // Decrease the quantity
+      );
+      await Department.findByIdAndUpdate(deptId, {
+        $push: { issuedItems: item },
       });
-    } catch (error) {
-      res.status(500).json("Internal server error", error);
-    }
+    }));
+
     res.status(201).json(savedSale);
   } catch (error) {
     res.status(400).json({ message: error });

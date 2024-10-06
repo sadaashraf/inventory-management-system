@@ -1,17 +1,31 @@
-import express from 'express';
-const router = express.Router();
-import { getAllStock, addOrUpdateStock, saveStock } from "../Controller/stock.controller.js";
+import express from "express";
+import {
+  createStock,
+  getAllStock,
+  getStockById,
+  updateStock,
+  deleteStock,
+} from "../Controller/stock.controller.js";
 
-// Get all stock items
+const router = express.Router();
+
+// POST request to create a stock item
+router.post("/", createStock);
+
+// GET request to fetch all stock items
 router.get("/", getAllStock);
 
-// Add or update a stock item
-router.post("/", addOrUpdateStock);
+// GET request to fetch a stock item by ID
+router.get("/:id", getStockById);
 
-// Bulk save stock data
-router.post("/bulk", saveStock); // Added route for bulk saving stock
+// PUT request to update a stock item by ID
+router.put("/:id", updateStock);
+
+// DELETE request to delete a stock item by ID
+router.delete("/:id", deleteStock);
 
 export default router;
+
 
 // import express from 'express';
 // import {

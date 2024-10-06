@@ -1,23 +1,60 @@
 import Purchase from "../Models/Purchase.js";
 import Supplier from "../Models/Supplier.js";
+import Stock from "../Models/Stock.js";
 
 export const createPurchase = async (req, res) => {
-  const { supplierId } = req.params;
-  const newPurchase = new Purchase(req.body);
+  const { supplierId } = req.params; // Supplier ID from URL
+  const { items, paid, total, balance } = req.body;
+
   try {
+    // 1. Create and save the new purchase
+    const newPurchase = new Purchase(req.body);
     const savedPurchase = await newPurchase.save();
-    try {
-      savedPurchase.items.map(async (item) => {
-        await Supplier.findByIdAndUpdate(supplierId, {
-          $push: { order: item },
-        });
-      });
-    } catch (error) {
-      res.status(500).json("Internal server error", error);
+
+    // 2. Update the supplier: Add items to the supplier's orders and update the balance
+    const updatedSupplier = await Supplier.findById(supplierId);
+    if (!updatedSupplier) {
+      return res.status(404).json({ message: "Supplier not found" });
     }
+
+    // Push items to the supplier's order list
+    updatedSupplier.order.push(...items);
+
+    // Update supplier's balance
+    // const newBalance = updatedSupplier.balance + balance; // Update balance based on payment/balance
+    updatedSupplier.balance = balance;
+
+    // Save the updated supplier
+    await updatedSupplier.save();
+
+    // 3. Update the stock with items (either add new items or update existing quantities)
+    for (let item of items) {
+      const { itemName, category, quantity, unit } = item;
+
+      // Check if the item exists in stock
+      const stockItem = await Stock.findOne({ itemName });
+
+      if (stockItem) {
+        // If item exists, update the quantity
+        stockItem.quantity += quantity;
+        await stockItem.save();
+      } else {
+        // If item does not exist, create a new stock entry
+        const newStockItem = new Stock({
+          itemName,
+          category,
+          quantity,
+          unit,
+        });
+        await newStockItem.save();
+      }
+    }
+
+    // Send back the response with the saved purchase
     res.status(201).json(savedPurchase);
   } catch (err) {
-    res.status(500).json(err);
+    console.error("Error creating purchase:", err);
+    res.status(500).json({ message: "Internal server error", error: err });
   }
 };
 
@@ -40,36 +77,185 @@ export const getPurchase = async (req, res) => {
 
 export const updatePurchase = async (req, res) => {
   try {
+    // Step 1: Fetch the existing purchase
+    const existingPurchase = await Purchase.findById(req.params.id);
+    if (!existingPurchase) {
+      return res.status(404).json({ message: "Purchase not found" });
+    }
+
+    // Step 2: Update the purchase with new data
     const updatedPurchase = await Purchase.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true }
     );
+
+    // Step 3: Reflect changes in supplier if items or balance are modified
+    const { items: newItems, balance: newBalance } = req.body;
+    const supplierId = req.params.supplierId;
+
+    const supplier = await Supplier.findById(supplierId);
+    if (!supplier) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    // Update supplier orders by replacing old items with new ones
+    supplier.order = supplier.order.filter(
+      (order) =>
+        !existingPurchase.items.some(
+          (oldItem) => oldItem.itemName === order.itemName
+        )
+    );
+    supplier.order.push(...newItems);
+
+    // Update supplier balance if modified
+    if (newBalance !== existingPurchase.balance) {
+      supplier.balance += newBalance - existingPurchase.balance;
+    }
+
+    await supplier.save();
+
+    // Step 4: Reflect changes in the stock
+    for (let i = 0; i < newItems.length; i++) {
+      const newItem = newItems[i];
+      const oldItem = existingPurchase.items.find(
+        (item) => item.itemName === newItem.itemName
+      );
+
+      let stockItem = await Stock.findOne({ itemName: oldItem?.itemName });
+
+      if (oldItem && stockItem) {
+        // If the item name has changed, remove the old stock and create a new one
+        if (oldItem.itemName !== newItem.itemName) {
+          await stockItem.remove();
+
+          const newStockItem = new Stock({
+            itemName: newItem.itemName,
+            category: newItem.category,
+            quantity: newItem.quantity,
+            unit: newItem.unit,
+          });
+          await newStockItem.save();
+        } else {
+          // Update existing stock item with new quantity
+          stockItem.quantity += newItem.quantity - oldItem.quantity;
+          stockItem.category = newItem.category;
+          stockItem.unit = newItem.unit;
+          await stockItem.save();
+        }
+      } else {
+        // If it's a new item, create a new stock entry
+        const newStockItem = new Stock({
+          itemName: newItem.itemName,
+          category: newItem.category,
+          quantity: newItem.quantity,
+          unit: newItem.unit,
+        });
+        await newStockItem.save();
+      }
+    }
+
+    // Step 5: Send updated purchase back as response
     res.status(200).json(updatedPurchase);
   } catch (err) {
-    res.status(500).json(err);
+    console.error("Error updating purchase:", err);
+    res.status(500).json({ message: "Internal server error", error: err });
   }
 };
+
 export const deletePurchase = async (req, res) => {
   const { supplierId } = req.params;
   try {
-    const purchase = await Purchase.findByIdAndDelete(req.params.id);
-
-    if (purchase) {
-      purchase.items.map(async(item)=>{
-      await Supplier.findByIdAndUpdate(supplierId, {
-        $pull: { order: item._id },
-      })
-    })
-
-      // Additional step: Delete associated items if needed
-      await Item.deleteMany({
-        _id: { $in: purchase.items.map((item) => item._id) },
-      });
+    // Step 1: Fetch the purchase to be deleted
+    const purchase = await Purchase.findById(req.params.id);
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
     }
 
-    res.status(200).json("Purchase has been deleted.");
+    // Step 2: Check stock for each item in the purchase
+    for (let i = 0; i < purchase.items.length; i++) {
+      const purchaseItem = purchase.items[i];
+      const stockItem = await Stock.findOne({
+        itemName: purchaseItem.itemName,
+      });
+
+      if (!stockItem) {
+        return res
+          .status(400)
+          .json({
+            message: `Stock for item ${purchaseItem.itemName} not found`,
+          });
+      }
+
+      // Ensure the stock quantity is sufficient
+      if (stockItem.quantity < purchaseItem.quantity) {
+        return res.status(400).json({
+          message: `Cannot delete purchase. Stock quantity for ${purchaseItem.itemName} is less than the quantity in the purchase.`,
+        });
+      }
+    }
+
+    // Step 3: Proceed with purchase deletion
+    await Purchase.findByIdAndDelete(req.params.id);
+
+    // Step 4: Update supplier's orders and balance
+    const supplier = await Supplier.findById(supplierId);
+    if (!supplier) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    for (let i = 0; i < purchase.items.length; i++) {
+      const purchaseItem = purchase.items[i];
+
+      // Find the corresponding item in the supplier's orders
+      const supplierItem = supplier.order.find(
+        (order) => order.itemName === purchaseItem.itemName
+      );
+
+      if (supplierItem) {
+        // Decrease the quantity of the item in supplier's order
+        supplierItem.quantity -= purchaseItem.quantity;
+
+        // If the quantity becomes 0 or less, remove the item from supplier's orders
+        if (supplierItem.quantity <= 0) {
+          supplier.order = supplier.order.filter(
+            (item) => item.itemName !== supplierItem.itemName
+          );
+        } else {
+          // Otherwise, keep the item with the updated quantity
+          supplier.order = supplier.order.map((item) =>
+            item.itemName === supplierItem.itemName
+              ? { ...item, quantity: supplierItem.quantity }
+              : item
+          );
+        }
+      }
+    }
+
+    // Update supplier balance by subtracting the total of the deleted purchase
+    supplier.balance -= purchase.total;
+    await supplier.save();
+
+    // Step 5: Update stock quantities
+    for (let i = 0; i < purchase.items.length; i++) {
+      const purchaseItem = purchase.items[i];
+      const stockItem = await Stock.findOne({
+        itemName: purchaseItem.itemName,
+      });
+
+      if (stockItem) {
+        // Decrease stock quantity by the amount in the purchase
+        stockItem.quantity -= purchaseItem.quantity;
+        await stockItem.save();
+      }
+    }
+
+    // Step 6: Respond with success message
+    res
+      .status(200)
+      .json({ message: "Purchase and related records have been deleted." });
   } catch (err) {
-    res.status(500).json(err);
+    console.error("Error deleting purchase:", err);
+    res.status(500).json({ message: "Internal server error", error: err });
   }
 };

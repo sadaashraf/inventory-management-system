@@ -14,6 +14,9 @@ const SupplierSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    balance: {
+      type: Number,
+    },
     order: Array,
   },
   { timestamps: true }

@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+import categoryRoutes from "./Routes/category.routes.js";
 import purchaseRoute from "./Routes/purchase.routes.js";
 import saleRoutes from "./Routes/sale.routes.js";
 import stockRoutes from "./Routes/stock.routes.js";
@@ -57,9 +58,10 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.use("/api/categories", categoryRoutes);
+app.use('/api/stock', stockRoutes);
 app.use("/api/purchases", purchaseRoute);
 app.use('/api/sales', saleRoutes);
-app.use('/api/stock', stockRoutes);
 app.use('/api/suppliers', supplierRoutes);
 
 app.use('/api/department', departmentRoutes);
