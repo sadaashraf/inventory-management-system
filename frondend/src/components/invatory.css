@@ -12,5 +12,9 @@
     padding: 10px;
     /* text-align: center; */
   }
+  .custom-button {
+    width: 30%; /* or specify a fixed width */
+    height: 40px; /* Ensure height consistency */
+  }
   
   

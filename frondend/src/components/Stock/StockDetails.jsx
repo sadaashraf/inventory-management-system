@@ -72,16 +72,26 @@ const StockDetails = ({ stockData, searchText, setSearchText, loading }) => {
               key: 'actions',
               render: (text, record) => (
                 record.quantity < 10 ? (
-                  <Button type="primary" danger onClick={() => handleRestock(record.itemName)}>
+                  <Button 
+                    type="primary" 
+                    danger 
+                    className="custom-button"
+                    onClick={() => handleRestock(record.itemName)}
+                  >
                     Restock
                   </Button>
                 ) : (
-                  <Button type="primary" onClick={() => handleStock(record.itemName)}>
+                  <Button 
+                    type="primary" 
+                    className="custom-button"
+                    onClick={() => handleStock(record.itemName)}
+                  >
                     Stock
                   </Button>
                 )
               ),
             },
+            
           ]}
           loading={loading}
           rowKey="itemName"

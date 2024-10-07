@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Table, Button, Form, Input, Modal, Popconfirm } from "antd";
 import { useCategory } from "../../context/categoryContext";
 import { DeleteOutline, EditOutlined } from "@mui/icons-material";
+import DeleteSharpIcon from "@mui/icons-material/DeleteSharp";
+import ModeIcon from "@mui/icons-material/Mode";
+import "../invatory.css";
 
 const Categories = () => {
   const { categories, loading, addCategory, updateCategory, deleteCategory } =
@@ -52,7 +55,7 @@ const Categories = () => {
             type="text"
             color="primary"
             style={{ marginRight: 8 }}
-            icon={<EditOutlined />}
+            icon={<ModeIcon />}
           />
 
           <Popconfirm
@@ -62,7 +65,7 @@ const Categories = () => {
             cancelText="No"
             
           >
-            <Button type="text" danger icon={<DeleteOutline />} />
+            <Button type="text" danger icon={<DeleteSharpIcon />} />
           </Popconfirm>
         </>
       ),
@@ -84,6 +87,7 @@ const Categories = () => {
         dataSource={categories}
         loading={loading}
         rowKey="_id"
+        className="css-table"
       />
 
       <Modal
