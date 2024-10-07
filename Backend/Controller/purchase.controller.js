@@ -164,7 +164,6 @@ export const updatePurchase = async (req, res) => {
 };
 
 export const deletePurchase = async (req, res) => {
-  const { supplierId } = req.params;
   try {
     // Step 1: Fetch the purchase to be deleted
     const purchase = await Purchase.findById(req.params.id);
@@ -172,71 +171,10 @@ export const deletePurchase = async (req, res) => {
       return res.status(404).json({ message: "Purchase not found" });
     }
 
-    // Step 2: Check stock for each item in the purchase
-    for (let i = 0; i < purchase.items.length; i++) {
-      const purchaseItem = purchase.items[i];
-      const stockItem = await Stock.findOne({
-        itemName: purchaseItem.itemName,
-      });
-
-      if (!stockItem) {
-        return res
-          .status(400)
-          .json({
-            message: `Stock for item ${purchaseItem.itemName} not found`,
-          });
-      }
-
-      // Ensure the stock quantity is sufficient
-      if (stockItem.quantity < purchaseItem.quantity) {
-        return res.status(400).json({
-          message: `Cannot delete purchase. Stock quantity for ${purchaseItem.itemName} is less than the quantity in the purchase.`,
-        });
-      }
-    }
-
-    // Step 3: Proceed with purchase deletion
+    // Step 2: Proceed with purchase deletion
     await Purchase.findByIdAndDelete(req.params.id);
 
-    // Step 4: Update supplier's orders and balance
-    const supplier = await Supplier.findById(supplierId);
-    if (!supplier) {
-      return res.status(404).json({ message: "Supplier not found" });
-    }
-
-    for (let i = 0; i < purchase.items.length; i++) {
-      const purchaseItem = purchase.items[i];
-
-      // Find the corresponding item in the supplier's orders
-      const supplierItem = supplier.order.find(
-        (order) => order.itemName === purchaseItem.itemName
-      );
-
-      if (supplierItem) {
-        // Decrease the quantity of the item in supplier's order
-        supplierItem.quantity -= purchaseItem.quantity;
-
-        // If the quantity becomes 0 or less, remove the item from supplier's orders
-        if (supplierItem.quantity <= 0) {
-          supplier.order = supplier.order.filter(
-            (item) => item.itemName !== supplierItem.itemName
-          );
-        } else {
-          // Otherwise, keep the item with the updated quantity
-          supplier.order = supplier.order.map((item) =>
-            item.itemName === supplierItem.itemName
-              ? { ...item, quantity: supplierItem.quantity }
-              : item
-          );
-        }
-      }
-    }
-
-    // Update supplier balance by subtracting the total of the deleted purchase
-    supplier.balance -= purchase.total;
-    await supplier.save();
-
-    // Step 5: Update stock quantities
+    // Step 3: Update stock quantities
     for (let i = 0; i < purchase.items.length; i++) {
       const purchaseItem = purchase.items[i];
       const stockItem = await Stock.findOne({
@@ -250,12 +188,15 @@ export const deletePurchase = async (req, res) => {
       }
     }
 
-    // Step 6: Respond with success message
+    // Step 4: Respond with success message
     res
       .status(200)
-      .json({ message: "Purchase and related records have been deleted." });
+      .json({ message: "Purchase has been deleted successfully." });
   } catch (err) {
     console.error("Error deleting purchase:", err);
     res.status(500).json({ message: "Internal server error", error: err });
   }
 };
+
+
+
