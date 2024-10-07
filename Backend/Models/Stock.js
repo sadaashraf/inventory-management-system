@@ -32,15 +32,3 @@ const stockSchema = new Schema(
 const Stock = model("Stock", stockSchema);
 
 export default Stock;
-// models/Stock.js
-// import mongoose from "mongoose";
-
-// const stockSchema = new mongoose.Schema({
-//   itemName: { type: String, },
-//   purchaseQuantity: { type: Number, default: 0 },
-//   saleQuantity: { type: Number, default: 0 },
-//   availableQuantity: { type: Number, default: 0 },
-//   unit: { type: String },
-// });
-
-// export default mongoose.model("Stock", stockSchema);
