@@ -5,33 +5,41 @@ import { Formik, Field, Form, FieldArray } from "formik";
 import * as Yup from "yup"; // For validation
 import { useDepartments } from "../Department/departmentsContext";
 import { useStocks } from "../../context/stocksContext";
-
+import moment from "moment";
+import "../invatory.css";
 const { Option } = Select;
 
 // Validation schema for Formik
-const validationSchema = (stockData = []) => Yup.object().shape({
-  department: Yup.string().required("Department is required"),
-  issueDate: Yup.string().required("Issue Date is required"),
-  items: Yup.array()
-    .of(
-      Yup.object().shape({
-        itemName: Yup.string().required("Item name is required"),
-        quantity: Yup.number()
-          .required("Quantity is required")
-          .positive("Quantity must be greater than 0")
-          .test("check-stock", "Quantity exceeds available stock", function (value) {
-            const itemName = this.parent.itemName;
-            const stockItem = stockData.find((item) => item.itemName === itemName);
-            return stockItem ? value <= stockItem.quantity : true;
-          }),
-        unit: Yup.string().required("Unit is required"),
-        unitPrice: Yup.number()
-          .required("Unit price is required")
-          .positive("Unit price must be greater than 0"),
-      })
-    )
-    .min(1, "At least one item is required"),
-});
+const validationSchema = (stockData = []) =>
+  Yup.object().shape({
+    department: Yup.string().required("Department is required"),
+    issueDate: Yup.string().required("Issue Date is required"),
+    items: Yup.array()
+      .of(
+        Yup.object().shape({
+          itemName: Yup.string().required("Item name is required"),
+          quantity: Yup.number()
+            .required("Quantity is required")
+            .positive("Quantity must be greater than 0")
+            .test(
+              "check-stock",
+              "Quantity exceeds available stock",
+              function (value) {
+                const itemName = this.parent.itemName;
+                const stockItem = stockData.find(
+                  (item) => item.itemName === itemName
+                );
+                return stockItem ? value <= stockItem.quantity : true;
+              }
+            ),
+          unit: Yup.string().required("Unit is required"),
+          unitPrice: Yup.number()
+            .required("Unit price is required")
+            .positive("Unit price must be greater than 0"),
+        })
+      )
+      .min(1, "At least one item is required"),
+  });
 
 const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
   const { departments } = useDepartments();
@@ -46,7 +54,10 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
 
   // Calculate total for all items in the form
   const calculateTotal = (items) => {
-    return items.reduce((acc, curr) => acc + (curr.unitPrice * curr.quantity || 0), 0);
+    return items.reduce(
+      (acc, curr) => acc + (curr.unitPrice * curr.quantity || 0),
+      0
+    );
   };
 
   return (
@@ -75,6 +86,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                 value={values.department}
                 onChange={(value) => setFieldValue("department", value)}
                 placeholder="Select a department"
+                style={{ height: "40px" }} // Adjust width and height here
               >
                 {departments.map((dept) => (
                   <Option key={dept._id} value={dept.name}>
@@ -86,18 +98,21 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                 <div className="error">{errors.department}</div>
               )}
             </Col>
+
             <Col span={12}>
-              <label>Issue Date</label>
-              <Field
-                as={Input}
-                name="issueDate"
-                type="date"
-                className="ant-input"
-              />
-              {touched.issueDate && errors.issueDate && (
-                <div className="error">{errors.issueDate}</div>
-              )}
-            </Col>
+                <label>Issue Date</label>
+                <Field
+                  as={Input}
+                  name="issueDate"
+                  type="date"
+                  className="ant-input"
+                  value={moment(values.issueDate).format("YYYY-MM-DD")}
+                  onChange={handleChange}
+                />
+                {touched.issueDate && errors.issueDate && (
+                  <div className="error">{errors.issueDate}</div>
+                )}
+              </Col>
           </Row>
 
           <FieldArray name="items">
@@ -107,6 +122,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                   dataSource={values.items}
                   pagination={false}
                   rowKey={(record, index) => index}
+                  className="custom-table"
                   columns={[
                     {
                       title: "Item Name",
@@ -117,8 +133,11 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                             name={`items.${index}.itemName`}
                             className="ant-input"
                             value={values.items[index].itemName || null}
-                            onChange={(value) => setFieldValue(`items.${index}.itemName`, value)}
+                            onChange={(value) =>
+                              setFieldValue(`items.${index}.itemName`, value)
+                            }
                             placeholder="Select an item from stock"
+                            style={{ height: "40px" }} 
                           >
                             {filteredItems.map((item) => (
                               <Option key={item._id} value={item.itemName}>
@@ -126,9 +145,12 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                               </Option>
                             ))}
                           </Select>
-                          {touched.items?.[index]?.itemName && errors.items?.[index]?.itemName && (
-                            <div className="error">{errors.items[index].itemName}</div>
-                          )}
+                          {touched.items?.[index]?.itemName &&
+                            errors.items?.[index]?.itemName && (
+                              <div className="error">
+                                {errors.items[index].itemName}
+                              </div>
+                            )}
                         </>
                       ),
                     },
@@ -145,9 +167,12 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                             onChange={handleChange}
                             placeholder="Quantity"
                           />
-                          {touched.items?.[index]?.quantity && errors.items?.[index]?.quantity && (
-                            <div className="error">{errors.items[index].quantity}</div>
-                          )}
+                          {touched.items?.[index]?.quantity &&
+                            errors.items?.[index]?.quantity && (
+                              <div className="error">
+                                {errors.items[index].quantity}
+                              </div>
+                            )}
                         </>
                       ),
                     },
@@ -159,8 +184,11 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                           name={`items.${index}.unit`}
                           className="ant-input"
                           value={values.items[index].unit || null}
-                          onChange={(value) => setFieldValue(`items.${index}.unit`, value)}
+                          onChange={(value) =>
+                            setFieldValue(`items.${index}.unit`, value)
+                          }
                           placeholder="unit"
+                          style={{ height: "40px" }} 
                         >
                           <Option value="kg">KG</Option>
                           <Option value="liter">Ltr</Option>
@@ -177,6 +205,18 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                           name={`items.${index}.unitPrice`}
                           type="number"
                           className="ant-input"
+                          placeholder="Unit Price"
+                          onChange={(e) => {
+                            handleChange(e);
+                            const newUnitPrice = e.target.value;
+                            const quantity =
+                              values.items[index].quantity || 0;
+                            const total = newUnitPrice * quantity;
+
+                            // Update total for the item
+                            setFieldValue(`items.${index}.total`, total);
+                            // calculateGrandTotal(); // Recalculate the grand total
+                          }}
                         />
                       ),
                     },
@@ -184,10 +224,12 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                       title: "Total",
                       dataIndex: "total",
                       render: (_, record, index) => (
-                        <Input
+                        <Field
+                          as={Input}
+                          name={`items.${index}.total`}
                           className="ant-input"
                           readOnly
-                          value={values.items[index].unitPrice * values.items[index].quantity || 0}
+                          value={values.items[index].total || 0}
                         />
                       ),
                     },
@@ -195,7 +237,10 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                       title: "Actions",
                       dataIndex: "actions",
                       render: (_, record, index) => (
-                        <Button icon={<DeleteOutlined />} onClick={() => remove(index)} />
+                        <Button
+                          icon={<DeleteOutlined />}
+                          onClick={() => remove(index)}
+                        />
                       ),
                     },
                   ]}
@@ -235,9 +280,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
               >
                 {!editingItem ? "Add" : "Update"}
               </Button>
-              <Button onClick={onCancel}>
-                Cancel
-              </Button>
+              <Button onClick={onCancel}>Cancel</Button>
             </Col>
           </Row>
         </Form>

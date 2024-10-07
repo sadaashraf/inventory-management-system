@@ -200,8 +200,14 @@ const Issue = () => {
     },
     {
       title: "Total Price",
-      dataIndex: "total",
       key: "total",
+      render: (text, record) => {
+        const total = record.items.reduce(
+          (acc, item) => acc + item.quantity * item.unitPrice,
+          0
+        );
+        return total;
+      },
     },
     {
       title: "Actions",

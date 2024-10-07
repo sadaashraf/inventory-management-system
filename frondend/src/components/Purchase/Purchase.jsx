@@ -133,7 +133,6 @@ const Purchase = () => {
       dataIndex: "supplier",
       key: "supplier",
     },
-
     {
       title: "Total Price",
       key: "total",
@@ -143,6 +142,26 @@ const Purchase = () => {
           0
         );
         return total;
+      },
+    },
+    {
+      title: "Paid",
+      dataIndex: "paid",
+      key: "paid",
+      render: (text, record) => record.paid || 0, // Display the paid amount or 0 if not available
+    },
+    {
+      title: "Balance",
+      key: "balance",
+      render: (text, record) => {
+        const total = record.items.reduce(
+          (acc, item) => acc + item.quantity * item.unitPrice,
+          0
+        );
+        const prevBalance = record.supplierBalance || 0; // Assuming supplier balance is stored in the record
+        const paid = record.paid || 0;
+        const balance = total + prevBalance - paid;
+        return balance;
       },
     },
     {
@@ -170,6 +189,7 @@ const Purchase = () => {
       ),
     },
   ];
+  
 
   return (
     <div>
