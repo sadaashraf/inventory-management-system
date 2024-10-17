@@ -29,7 +29,7 @@ export const createPurchase = async (req, res) => {
 
     // 3. Update the stock with items (either add new items or update existing quantities)
     for (let item of items) {
-      const { itemName, category, quantity, unit } = item;
+      const { itemName, category, quantity, unit,unitPrice } = item;
 
       // Check if the item exists in stock
       const stockItem = await Stock.findOne({ itemName });
@@ -45,6 +45,7 @@ export const createPurchase = async (req, res) => {
           category,
           quantity,
           unit,
+          unitPrice,
         });
         await newStockItem.save();
       }
@@ -134,6 +135,7 @@ export const updatePurchase = async (req, res) => {
             category: newItem.category,
             quantity: newItem.quantity,
             unit: newItem.unit,
+            unitPrice: newItem.unitPrice,
           });
           await newStockItem.save();
         } else {
@@ -150,6 +152,7 @@ export const updatePurchase = async (req, res) => {
           category: newItem.category,
           quantity: newItem.quantity,
           unit: newItem.unit,
+          unitPrice: newItem.unitPrice,
         });
         await newStockItem.save();
       }

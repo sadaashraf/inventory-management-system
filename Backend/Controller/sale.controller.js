@@ -75,17 +75,10 @@ export const deleteSale = async (req, res) => {
     if (!sale) {
       return res.status(404).json({ message: "Issue not found" });
     }
-    try {
-      sale.items.map(async (item) => {
-        await Department.findByIdAndUpdate(deptId, {
-          $pull: { issuedItems: item },
-        });
-      });
-    } catch (error) {
-      res.status(500).json("Internal server error", error);
-    }
+
+    // Removed the department update logic since we only want to delete from the issue list
     res.status(200).json({ message: "Issue deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting Issue: " + error.message });
+    res.status(500).json({ message: "Error deleting issue: " + error.message });
   }
 };

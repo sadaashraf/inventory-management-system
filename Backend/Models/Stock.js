@@ -24,6 +24,11 @@ const stockSchema = new Schema(
       required: true,
       trim: true,
     },
+    unitPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
   },
   { timestamps: true }
 );

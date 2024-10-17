@@ -3,9 +3,9 @@ import Stock from "../Models/Stock.js";
 // Create a new stock item
 export const createStock = async (req, res) => {
   try {
-    const { itemName, category, quantity, unit } = req.body;
+    const { itemName, category, quantity, unit, unitPrice } = req.body;
 
-    const newStockItem = new Stock({ itemName, category, quantity, unit });
+    const newStockItem = new Stock({ itemName, category, quantity, unit, unitPrice });
     const savedStockItem = await newStockItem.save();
 
     res.status(201).json(savedStockItem);
