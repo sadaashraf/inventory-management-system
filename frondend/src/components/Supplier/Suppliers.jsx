@@ -6,11 +6,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  EyeOutlined,
 } from "@ant-design/icons"; //
-import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
-import ModeIcon from '@mui/icons-material/Mode';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import SupplierForm from "./SupplierForm";
 import { useSuppliers } from "../../context/supplierContext";
 import { useNavigate } from "react-router-dom";
@@ -152,26 +148,50 @@ const Supplier = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="left">
+        <Space size="middle">
           <Button
-            type="link"
-            icon={<ModeIcon />}
+            type="primary"
+            style={{
+              backgroundColor: "#00ACC1", 
+              color: "#fff", 
+              borderColor: "#00ACC1",
+            }}
+            icon={<SearchOutlined />} 
+            onClick={() => Navigate(`/supplier-detail/${record._id}`)}
+          >
+            Details
+          </Button>
+    
+          <Button
+            type="primary"
+            style={{
+              backgroundColor: "#FFB300", // Yellow color (for Edit)
+              color: "#fff",
+              borderColor: "#FFB300",
+            }}
+            icon={<EditOutlined />} // Edit icon
             onClick={() => handleEdit(record)}
-          />
+          >
+            Edit
+          </Button>
+    
           <Button
-            type="link"
-            icon={<DeleteSharpIcon/>}
+            type="primary"
             danger
+            style={{
+              backgroundColor: "#F44336", // Red color (for Delete)
+              color: "#fff",
+              borderColor: "#F44336",
+            }}
+            icon={<DeleteOutlined />} // Delete icon
             onClick={() => handleDelete(record._id)}
-          />
-          <Button
-            type="link"
-            icon={<VisibilityIcon />}
-            onClick={() => {Navigate(`/supplier-detail/${record._id}`)}}
-          />
+          >
+            Delete
+          </Button>
         </Space>
       ),
-    },
+    }
+    
   ];
 
   return (

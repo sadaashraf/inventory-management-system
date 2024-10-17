@@ -19,6 +19,7 @@ import ListItemText from "@mui/material/ListItemText";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import CategoryIcon from '@mui/icons-material/Category';
+import './index.css';
 
 import {
   BrowserRouter as Router,

@@ -25,9 +25,6 @@ const validationSchema = Yup.object().shape({
         unitPrice: Yup.number()
           .required("Unit price is required") // Unit price is required
           .positive("Unit price must be greater than 0"), // Must be greater than 0
-        // total: Yup.number()
-        //   .required("Total is required") // Total is required
-        //   .positive("Total must be greater than 0"), // Must be greater than 0
       })
     )
     .min(1, "At least one item is required"), // Ensure at least one item is added
@@ -418,22 +415,24 @@ const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                         >
                           <label>Paid</label>
                           <Field
-  as={Input}
-  name="paid"
-  type="number"
-  className="ant-input"
-  onChange={(e) => {
-    const paidValue = parseFloat(e.target.value) || 0; // Convert input to number or default to 0
-    const totalAmount = values.total || 0;
-    const prevBalance = selctedSupplier?.balance || 0;
-    
-    setFieldValue("paid", paidValue);
-    setFieldValue("balance", totalAmount + prevBalance - paidValue); // Update balance
-  }}
-  value={values.paid || 0} // Default paid to 0 if not entered
-  style={{ width: "50%" }} // Adjust the width as needed
-/>
+                            as={Input}
+                            name="paid"
+                            type="number"
+                            className="ant-input"
+                            onChange={(e) => {
+                              const paidValue = parseFloat(e.target.value) || 0; // Convert input to number or default to 0
+                              const totalAmount = values.total || 0;
+                              const prevBalance = selctedSupplier?.balance || 0;
 
+                              setFieldValue("paid", paidValue);
+                              setFieldValue(
+                                "balance",
+                                totalAmount + prevBalance - paidValue
+                              ); // Update balance
+                            }}
+                            value={values.paid || 0} // Default paid to 0 if not entered
+                            style={{ width: "50%" }} // Adjust the width as needed
+                          />
                         </div>
                       </Col>
 

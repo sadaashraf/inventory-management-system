@@ -168,23 +168,45 @@ const Purchase = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="left">
+        <Space size="middle">
           <Button
-            type="link"
-            icon={<ModeIcon />}
+            type="primary"
+            style={{
+              backgroundColor: "#FFB300",
+              color: "#fff",
+              borderColor: "#FFB300",
+            }}
+
             onClick={() => handleEdit(record)}
-          />
+          >
+            Edit
+          </Button>
+    
           <Button
-            type="link"
-            icon={<VisibilityIcon />}
-            onClick={() => handleView(record)}
-          />
-          <Button
-            type="link"
-            icon={<DeleteSharpIcon />}
+            type="primary"
             danger
+            style={{
+              backgroundColor: "#F44336", // Red color (for Delete)
+              color: "#fff",
+              borderColor: "#F44336",
+            }}
+            
             onClick={() => handleDelete(record)}
-          />
+          >
+            Delete
+          </Button>
+          <Button
+            type="primary"
+            style={{
+              backgroundColor: "#00ACC1", 
+              color: "#fff", 
+              borderColor: "#00ACC1",
+            }}
+            onClick={() => handleView(record)}
+            >
+            Details
+          </Button>
+  
         </Space>
       ),
     },

@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Form, Input, Modal, Popconfirm } from "antd";
 import { useCategory } from "../../context/categoryContext";
-import { DeleteOutline, EditOutlined } from "@mui/icons-material";
-import DeleteSharpIcon from "@mui/icons-material/DeleteSharp";
-import ModeIcon from "@mui/icons-material/Mode";
 import "../invatory.css";
 
 const Categories = () => {
@@ -51,25 +48,42 @@ const Categories = () => {
       render: (text, record) => (
         <>
           <Button
+            type="primary"
+            style={{
+              backgroundColor: "#FFB300",
+              color: "#fff",
+              borderColor: "#FFB300",
+              
+            }}
             onClick={() => handleEditCategory(record)}
-            type="text"
-            color="primary"
-            style={{ marginRight: 8 }}
-            icon={<ModeIcon />}
-          />
-
+          >
+            Edit
+          </Button>
+    
           <Popconfirm
             title="Are you sure to delete this category?"
             onConfirm={() => deleteCategory(record._id)}
             okText="Yes"
             cancelText="No"
-            
           >
-            <Button type="text" danger icon={<DeleteSharpIcon />} />
+            <Button
+              type="primary"
+              danger
+              style={{
+                backgroundColor: "#F44336",
+                color: "#fff",
+                borderColor: "#F44336",
+                marginLeft: '5px' // Add margin for spacing
+              }}
+            >
+              Delete
+            </Button>
           </Popconfirm>
         </>
       ),
-    },
+    }
+    
+    
   ];
 
   return (

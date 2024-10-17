@@ -211,17 +211,47 @@ const Issue = () => {
     },
     {
       title: "Actions",
+      key: "actions",
       render: (text, record) => (
-        <Space size="left">
-          <IconButton color="secondary" onClick={() => handleEdit(record)}>
-            <ModeIcon />
-          </IconButton>
-          <IconButton color="primary" onClick={() => handleView(record)}>
-            <VisibilityIcon />
-          </IconButton>
-          <IconButton onClick={() => handleDelete(record)} color="error">
-            <DeleteSharpIcon />
-          </IconButton>
+        <Space size="middle">
+          <Button
+            type="primary"
+            style={{
+              backgroundColor: "#FFB300",
+              color: "#fff",
+              borderColor: "#FFB300",
+            }}
+
+            onClick={() => handleEdit(record)}
+          >
+            Edit
+          </Button>
+    
+          <Button
+            type="primary"
+            danger
+            style={{
+              backgroundColor: "#F44336", // Red color (for Delete)
+              color: "#fff",
+              borderColor: "#F44336",
+            }}
+            
+            onClick={() => handleDelete(record)}
+          >
+            Delete
+          </Button>
+          <Button
+            type="primary"
+            style={{
+              backgroundColor: "#00ACC1", 
+              color: "#fff", 
+              borderColor: "#00ACC1",
+            }}
+            onClick={() => handleView(record)}
+            >
+            Details
+          </Button>
+  
         </Space>
       ),
     },

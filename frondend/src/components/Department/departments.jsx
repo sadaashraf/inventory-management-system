@@ -121,13 +121,51 @@ const Departments = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="left">
-          <Button type="link" icon={<ModeIcon />} onClick={() => handleEdit(record)} />
-          <Button type="link" icon={<DeleteSharpIcon />} danger onClick={() => handleDelete(record._id)} />
-          <Button type="link" icon={<VisibilityIcon />} onClick={() => navigate(`/department-detail/${record._id}`)} />
+        <Space size="middle">
+          <Button
+        type="primary"
+        style={{
+          backgroundColor: "#FFB300", // Yellow color (for Edit)
+          color: "#fff",
+          borderColor: "#FFB300",
+        }}
+        icon={<EditOutlined />} // Edit icon
+        onClick={() => handleEdit(record)}
+      >
+        Edit
+      </Button>
+
+      <Button
+        type="primary"
+        danger
+        style={{
+          backgroundColor: "#F44336", // Red color (for Delete)
+          color: "#fff",
+          borderColor: "#F44336",
+        }}
+        icon={<DeleteOutlined />} // Delete icon
+        onClick={() => handleDelete(record._id)}
+      >
+        Delete
+      </Button>
+    
+      <Button
+        type="primary"
+        style={{
+          backgroundColor: "#00ACC1", // Teal color (for Details)
+          color: "#fff", // White text
+          borderColor: "#00ACC1", // Match border with background
+        }}
+        icon={<SearchOutlined />}
+        
+            onClick={() => navigate(`/department-detail/${record._id}`)}
+            >
+            Details
+          </Button>
         </Space>
       ),
-    },
+    }
+    
   ];
 
   return (

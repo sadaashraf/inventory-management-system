@@ -43,7 +43,7 @@ const validationSchema = (stockData = []) =>
 
 const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
   const { departments } = useDepartments();
-  const { stockData = [] } = useStocks(); // Ensure stockData defaults to an empty array
+  const { stockData = [] } = useStocks();
   const [filteredItems, setFilteredItems] = useState([]);
 
   // Filter stock items based on available quantity
@@ -77,7 +77,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
         handleSubmit,
       }) => (
         <Form>
-          <Row gutter={16} style={{ marginBottom: 0 }}>
+          <Row gutter={16} style={{ marginBottom: 10 }}>
             <Col span={12}>
               <label>Department</label>
               <Select
@@ -86,7 +86,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                 value={values.department}
                 onChange={(value) => setFieldValue("department", value)}
                 placeholder="Select a department"
-                style={{ height: "40px" }} // Adjust width and height here
+              
               >
                 {departments.map((dept) => (
                   <Option key={dept._id} value={dept.name}>
@@ -133,11 +133,32 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                             name={`items.${index}.itemName`}
                             className="ant-input"
                             value={values.items[index].itemName || null}
-                            onChange={(value) =>
-                              setFieldValue(`items.${index}.itemName`, value)
-                            }
+                            onChange={(value) => {
+                              setFieldValue(`items.${index}.itemName`, value);
+
+                              // Find the selected item from stockData
+                              const selectedItem = stockData.find(
+                                (item) => item.itemName === value
+                              );
+
+                              // Auto-fill unit price if the item is found
+                              if (selectedItem) {
+                                setFieldValue(
+                                  `items.${index}.unitPrice`,
+                                  selectedItem.unitPrice
+                                );
+
+                                // If quantity is already filled, calculate the total
+                                const quantity = values.items[index].quantity;
+                                if (quantity) {
+                                  const total =
+                                    selectedItem.unitPrice * quantity;
+                                  setFieldValue(`items.${index}.total`, total);
+                                }
+                              }
+                            }}
                             placeholder="Select an item from stock"
-                            style={{ height: "40px" }} 
+                            // style={{ height: "38px" }}
                           >
                             {filteredItems.map((item) => (
                               <Option key={item._id} value={item.itemName}>
@@ -164,7 +185,17 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                             name={`items.${index}.quantity`}
                             type="number"
                             className="ant-input"
-                            onChange={handleChange}
+                            onChange={(e) => {
+                              handleChange(e);
+
+                              // Update total when quantity changes
+                              const quantity = e.target.value;
+                              const unitPrice = values.items[index].unitPrice;
+                              if (unitPrice) {
+                                const total = unitPrice * quantity;
+                                setFieldValue(`items.${index}.total`, total);
+                              }
+                            }}
                             placeholder="Quantity"
                           />
                           {touched.items?.[index]?.quantity &&
@@ -188,7 +219,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                             setFieldValue(`items.${index}.unit`, value)
                           }
                           placeholder="unit"
-                          style={{ height: "40px" }} 
+                          // style={{ height: "38px" }}
                         >
                           <Option value="kg">KG</Option>
                           <Option value="liter">Ltr</Option>
@@ -215,7 +246,6 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
 
                             // Update total for the item
                             setFieldValue(`items.${index}.total`, total);
-                            // calculateGrandTotal(); // Recalculate the grand total
                           }}
                         />
                       ),
@@ -260,16 +290,21 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                     >
                       Add Row
                     </Button>
+                    
                   )}
                 />
-                <Row gutter={16} justify="start" style={{ marginTop: 20 }}>
+                {/* <Row gutter={16}  style={{ marginTop: "20px",textAlign: "right" }}>
                   <Col span={8}>
                     <strong>Total: </strong> {calculateTotal(values.items) || 0}
                   </Col>
-                </Row>
+                </Row> */}
               </>
             )}
           </FieldArray>
+
+          <div style={{ marginTop: "0", textAlign: "right" }}>
+            <strong>Total: {calculateTotal(values.items)}</strong>
+          </div>
 
           <Row style={{ marginTop: 10, justifyContent: "end" }}>
             <Col>
@@ -290,3 +325,4 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
 };
 
 export default IssueForm;
+
