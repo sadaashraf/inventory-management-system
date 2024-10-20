@@ -17,7 +17,9 @@ const validationSchema = Yup.object().shape({
   items: Yup.array()
     .of(
       Yup.object().shape({
-        itemName: Yup.string().required("Item name is required"), // Item name is required
+        itemName: Yup.string()
+          .required("Item name is required") // Item name is required
+          .matches(/^[A-Za-z\s]+$/, "need letter value"), // Ensures no numbers
         quantity: Yup.number()
           .required("Quantity is required") // Quantity is required
           .positive("Quantity must be greater than 0"), // Must be greater than 0
@@ -29,6 +31,7 @@ const validationSchema = Yup.object().shape({
     )
     .min(1, "At least one item is required"), // Ensure at least one item is added
 });
+
 
 const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
   const { suppliers } = useSuppliers();
@@ -180,16 +183,6 @@ const BillingForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                             {touched.itemName && errors.itemName && (
                               <div className="error">{errors.itemName}</div>
                             )}
-                            {/* {touched.itemName && stockData !== [] && (
-                              <div>
-                                {stockData.map((stock) => (
-                                  <div key={stock._id}>{stock.itemName}</div>
-                                ))}
-                              </div>
-                            )}
-                            {touched.itemName && errors.itemName && (
-                              <div className="error">{errors.itemName}</div>
-                            )} */}
                           </>
                         ),
                       },
