@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Table, Input, Button, Space, Modal, message } from "antd";
 import Highlighter from "react-highlight-words";
-import {SearchOutlined, PlusOutlined, EditOutlined,DeleteOutlined,EyeOutlined,
-} from "@ant-design/icons"; // Keeping only relevant icon imports
+import {SearchOutlined, PlusOutlined} from "@ant-design/icons"; // Keeping only relevant icon imports
 import axios from "axios";
 import moment from "moment";
-import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
-import ModeIcon from '@mui/icons-material/Mode';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import IssueForm from "./IssueForm"; // Assuming you have an IssueForm component
+import IssueForm from "./IssueForm";
 import { useDepartments } from "../Department/departmentsContext";
 import { Dialog, DialogContent,DialogTitle,IconButton,
 } from "@mui/material";
@@ -196,7 +192,7 @@ const Issue = () => {
       dataIndex: "issueDate",
       key: "issueDate",
       sorter: (a, b) => new Date(a.issueDate) - new Date(b.issueDate),
-      render: (date) => moment(date).format("YYYY-MM-DD"),
+      render: (date) => date ? moment(date).format("YYYY-MM-DD") : "N/A",  // Safely handling invalid dates
     },
     {
       title: "Total Price",

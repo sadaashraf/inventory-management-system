@@ -293,11 +293,7 @@ const IssueForm = ({ initialValues, onFinish, onCancel, editingItem }) => {
                     
                   )}
                 />
-                {/* <Row gutter={16}  style={{ marginTop: "20px",textAlign: "right" }}>
-                  <Col span={8}>
-                    <strong>Total: </strong> {calculateTotal(values.items) || 0}
-                  </Col>
-                </Row> */}
+               
               </>
             )}
           </FieldArray>
